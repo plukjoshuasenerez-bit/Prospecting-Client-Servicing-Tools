@@ -152,98 +152,6 @@ input[type="color"]{padding:4px}
 #proposalTabs{position:sticky;top:0;z-index:20;background:#fff;padding:10px 0 12px;border-bottom:1px solid #E2E8F0;}#proposalModule #proposalTabs .plan-tab-dynamic{max-width:260px;overflow:hidden;text-overflow:ellipsis;}
 
 </style>
-<style>
-/* OPTIMUM — Reference Sidebar */
-.sidebar{
-  background:linear-gradient(180deg,#f8fcfd 0%,#f4fafb 100%) !important;
-  border-right:1px solid #dbe7ea !important;
-  padding:14px 7px 12px !important;
-}
-.sidebar .nav{
-  gap:5px !important;
-}
-.sidebar .nav-btn{
-  width:100% !important;
-  min-height:45px !important;
-  border:0 !important;
-  border-radius:14px !important;
-  background:transparent !important;
-  color:#243746 !important;
-  font-weight:700 !important;
-  font-size:14px !important;
-  text-align:left !important;
-  padding:0 15px !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  transition:all .18s ease !important;
-  box-shadow:none !important;
-}
-.sidebar .nav-btn:hover{
-  background:#e9f5f7 !important;
-  transform:none !important;
-}
-.sidebar .nav-btn.active{
-  background:linear-gradient(90deg,#087f91 0%,#10b5c7 100%) !important;
-  color:#fff !important;
-  box-shadow:0 8px 18px rgba(8,127,145,.18) !important;
-}
-.sidebar .nav-btn .nav-label{
-  color:inherit !important;
-}
-</style><style>
-/* OPTIMUM — Login profile details */
-.login-profile{
-  text-align:center;
-  margin:8px 0 14px;
-}
-.login-profile-name{
-  font-size:18px;
-  font-weight:900;
-  letter-spacing:.4px;
-  color:#101828;
-  line-height:1.2;
-  white-space:nowrap;
-}
-.login-profile-role{
-  margin-top:4px;
-  font-size:12px;
-  font-weight:700;
-  color:#425466;
-  line-height:1.25;
-  white-space:nowrap;
-}
-.login-hint{
-  margin-top:11px !important;
-  font-size:11px !important;
-  font-weight:700 !important;
-  letter-spacing:.25px !important;
-  color:#425466 !important;
-  text-align:center !important;
-}
-</style>
-<style>
-#loginPage #loginSubtitle{display:none !important;}
-#loginPage .login-profile{margin-top:10px !important;}
-</style>
-
-<style>
-/* Calendar View control */
-.calendar-view-btn{
-  display:inline-flex !important;
-  align-items:center !important;
-  gap:7px !important;
-  border:1px solid #d7e4e9 !important;
-  background:#fff !important;
-  color:#183b4a !important;
-  border-radius:10px !important;
-  padding:9px 14px !important;
-  font-weight:700 !important;
-  cursor:pointer !important;
-  box-shadow:0 2px 8px rgba(20,50,70,.06) !important;
-}
-.calendar-view-btn:hover{background:#eef8fa !important;}
-</style>
 </head>
 <body>
 
@@ -252,15 +160,8 @@ input[type="color"]{padding:4px}
     <div class="brand-logo">
       <div class="brand-name" id="loginBrand"><span class="brand-o">O</span>PTIMUM</div>
     </div>
-    <div class="subtitle" id="loginSubtitle" style="display:none !important;"></div>
-
-    <div class="login-profile">
-      <div class="login-profile-name" id="loginProfileName">JOSHUA SENEREZ</div>
-      <div class="login-profile-role" id="loginProfileRole">Premier Level Financial Advisor – Unit Manager</div>
-      <div class="login-stripe" aria-hidden="true"></div>
-    </div>
-
-    
+    <div class="subtitle" id="loginSubtitle">Prospect and Client Servicing</div>
+    <div class="login-stripe" aria-hidden="true"></div>
     <div class="login-slogan">We Listen <span class="slogan-sep">.</span> We Understand <span class="slogan-sep">.</span> We Deliver</div>
 
     <div class="login-field">
@@ -274,12 +175,12 @@ input[type="color"]{padding:4px}
       <a class="forgot-link" href="#" onclick="event.preventDefault();alert('Please contact your administrator to reset your password.');">Forgot password?</a>
     </div>
     <button class="login-btn" onclick="login()">Login</button>
-    
-    <div class="login-hint" style="display:block !important">Prospecting &amp; Client Servicing Tools</div>
+    <div id="loginError" class="login-error"></div>
+    <div class="login-hint">Productivity &amp; Client Servicing Tools</div>
   </div>
 </section>
 
-<section id="appPage"<section id="appPage" class="hidden">
+<section id="appPage" class="hidden">
   <header class="topbar">
     <div class="top-brand">
       <div class="top-mark" id="topMark">O</div>
@@ -294,6 +195,7 @@ input[type="color"]{padding:4px}
   <div class="layout">
     <aside class="sidebar">
       <div class="side-title" id="sideTitle">OPTIMUM</div>
+      <button class="nav-btn active" data-page="home" onclick="showPage('home',this)">🏠 <span class="nav-label">Dashboard</span></button>
       <button class="nav-btn" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
       <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this)">📅 <span class="nav-label">Calendar</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)">🎯 <span class="nav-label">Prospect</span></button>
@@ -302,7 +204,7 @@ input[type="color"]{padding:4px}
 
     <main class="content">
       <section id="home" class="app-section">
-        <h1 class="page-title">Prospecting &amp; Client Servicing Tools</h1>
+        <h1 class="page-title">Productivity &amp; Client Servicing Tools</h1>
         <p class="page-sub">Your OPTIMUM workspace for prospecting, client servicing, and policy review.</p>
         <div class="grid">
           <div class="card"><h3>Prospect List</h3><div class="kpi">LOCAL</div><p>Ready for your prospect management module and optional Apps Script sync.</p></div>
@@ -317,21 +219,21 @@ input[type="color"]{padding:4px}
           <div class="calendar-nav"><button class="cal-btn" onclick="calPrev()">‹</button><div id="calMonthLabel" class="cal-title">September 2026</div><button class="cal-btn" onclick="calNext()">›</button><button class="cal-btn" onclick="calToday()">Today</button></div>
           <div class="cal-tools"><button class="cal-btn primary" onclick="openActivityEditor()">＋ Add Activity</button><label class="cal-btn">📄 Upload CSV<input type="file" accept=".csv,text/csv" onchange="importCalendarCSV(event)"></label><label class="cal-btn">📕 Upload PDF<input type="file" accept="application/pdf,.pdf" onchange="importCalendarPDF(event)"></label></div>
         </div>
-        <div class="calendar-box"></div>
+        <div class="calendar-box"><div id="calendarGrid" class="calendar-grid"></div></div>
         <div class="calendar-lower">
-          <div class="calendar-panel"><h3>📌 Today — </h3></div>
-          <div class="calendar-panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>To-Do List</h3><button class="cal-btn primary" onclick="addTodo()">＋ Add To-Do</button></div></div>
+          <div class="calendar-panel"><h3>📌 Today — <span id="todayLabel"></span></h3><div id="todayActivities"></div></div>
+          <div class="calendar-panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>To-Do List</h3><button class="cal-btn primary" onclick="addTodo()">＋ Add To-Do</button></div><div id="todoList"></div></div>
         </div>
         <div class="calendar-panel" style="margin-top:16px">
           <div class="list-toolbar"><h3 style="margin:0">List View</h3><select id="listFilter" onchange="renderActivityList()"><option value="all">All Activity</option><option>Birthday</option><option>Due Date</option><option>Anniversary</option><option>Lapse</option><option>Activity</option></select></div>
-          
+          <div id="activityList"></div>
         </div>
       </section>
 
 <section id="prospect" class="app-section hidden prospect-shell"><div class="card"><div class="prospect-topbar"><div><h2 style="margin:0">Prospect Tracker</h2><p class="small">Goal data and prospect pipeline in one simple view. Data is saved in this browser.</p></div><div class="prospect-actions"><button class="goldbtn" onclick="openGoalSetupModal()">Add Goal</button></div></div>
 <div class="prospect-filter-row"><div><label>Month</label><select id="ptFilterMonth" onchange="renderProspectTracker()"></select></div><div><label>Year</label><input id="ptFilterYear" type="number" onchange="renderProspectTracker()"></div><div><label>Plan Filter</label><input id="ptFilterPlan" placeholder="Plan" oninput="renderProspectTracker()"></div><div><label>Occupation Filter</label><input id="ptFilterOccupation" placeholder="Occupation" oninput="renderProspectTracker()"></div><div><label>Search Name</label><input id="ptSearch" placeholder="Search prospect" oninput="renderProspectTracker()"></div></div>
-<div style="margin-top:14px"><h3 style="margin:0 0 8px">Goals Overview</h3></div></div>
-<div id="ptListCard" class="card"><div class="prospect-topbar"><div class="list-title-wrap"><div class="list-heading-actions"><div><h3 style="margin:0">Prospect List View</h3><span class="small">Select a stage to view that prospect list.</span></div><div class="prospect-actions list-actions"><button class="btn" onclick="openProspectModal()">＋ Add Prospect</button><button class="ghost prospect-smallbtn" onclick="document.getElementById('ptCsvUpload').click()">⇧ CSV / Excel</button><input id="ptCsvUpload" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="display:none" onchange="importProspectFile(this)"></div></div></div></div></div></section>
+<div style="margin-top:14px"><h3 style="margin:0 0 8px">Goals Overview</h3><div id="ptGoalView" class="prospect-kpis"></div></div></div>
+<div id="ptListCard" class="card"><div class="prospect-topbar"><div class="list-title-wrap"><div class="list-heading-actions"><div><h3 style="margin:0">Prospect List View</h3><span class="small">Select a stage to view that prospect list.</span></div><div class="prospect-actions list-actions"><button class="btn" onclick="openProspectModal()">＋ Add Prospect</button><button class="ghost prospect-smallbtn" onclick="document.getElementById('ptCsvUpload').click()">⇧ CSV / Excel</button><input id="ptCsvUpload" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" style="display:none" onchange="importProspectFile(this)"></div></div><div id="ptStageTabs" class="prospect-stage-tabs"></div></div></div><div id="ptEngagementLists" class="engagement-board"></div></div></section>
 <div id="ptGoalModal" class="modal-backdrop hidden"><div class="modal-box"><button onclick="closeGoalSetupModal()" style="float:right">×</button><h2>Add Goal</h2><div class="grid"><div><label>Month</label><select id="ptGoalMonth"></select></div><div><label>Year</label><input id="ptGoalYear" type="number"></div><div><label>Goal APE</label><input id="ptGoalAPE" type="number"></div><div><label>Target Closing Ratio (%)</label><input id="ptGoalRatio" type="number"></div><div><label>Remarks</label><input id="ptGoalRemarks"></div></div><div class="prospect-actions" style="margin-top:12px"><button class="btn" onclick="saveGoalSetup()">Save Goal</button><button onclick="closeGoalSetupModal()">Cancel</button></div></div></div>
 <div id="ptProspectModal" class="modal-backdrop hidden"><div class="modal-box"><button onclick="closeProspectModal()" style="float:right">×</button><h2>Edit / Add Prospect</h2><input id="ptEditIndex" type="hidden"><div class="grid"><div><label>Name</label><input id="ptName"></div><div><label>Contact</label><input id="ptContact"></div><div><label>Email</label><input id="ptEmail" type="email"></div><div><label>Messenger Link</label><input id="ptMessengerLink" type="url" placeholder="https://m.me/... or Messenger profile link"></div><div><label>Occupation</label><input id="ptOccupation"></div><div><label>Plan</label><input id="ptPlan"></div><div><label>Expected APE</label><input id="ptAPE" type="number"></div><div><label>Engagement</label><select id="ptEngagement"><option value="Approach" selected>Approach</option><option value="Setting Appointment">Setting Appointment</option><option value="Done Client Meeting">Done Client Meeting</option><option value="For Closing">For Closing</option><option value="Closed">Closed</option></select></div><div><label>Status</label><select id="ptStatus"><option value="Active" selected>Active</option><option value="Lost">Lost</option><option value="Closed">Closed</option></select></div><div><label>Next Follow Up</label><input id="ptNextFollowUp" type="date"></div><div style="grid-column:1/-1"><label>Remarks</label><textarea id="ptNotes" rows="4" placeholder="Add remarks / latest update..."></textarea></div></div><div class="prospect-actions" style="margin-top:12px"><button class="btn" onclick="saveProspect()">Save Prospect</button><button onclick="closeProspectModal()">Cancel</button></div></div></div>
 
@@ -347,7 +249,7 @@ input[type="color"]{padding:4px}
   <div class="field"><label>Policy Insured Age</label><input id="insuredAge" type="number" min="0" max="120" placeholder="Age"></div>
   <div class="field"><label>Gender</label><select id="gender"><option value="">Select Gender</option><option>Male</option><option>Female</option></select></div>
   <div class="field"><label>Date of Birth *</label><input id="dob" type="date"></div>
-  <div class="field full"><label>Plan Color</label></div>
+  <div class="field full"><label>Plan Color</label><div class="colors" id="colors"></div></div>
   <label class="check field full"><input id="ratedCase" type="checkbox"> Rated case (adds + to plan name)</label>
   <div class="field"><label>Payment Term</label><select id="paymentTerm" onchange="toggleCustomTerm()">
     <option value="Regular Pay / Flexible">Regular Pay / Flexible</option><option value="Custom">Custom</option>
@@ -361,11 +263,11 @@ input[type="color"]{padding:4px}
 </div>
 
 <div class="section-title benefit-head"><span>Benefits</span><button class="btn ghost" type="button" onclick="addBenefit()">＋ Add Benefit</button></div>
-
+<div id="benefits"></div>
 
 <div class="section-title">Fund Value Projection</div>
 <select id="fundType" style="max-width:350px"><option>Projected Fund Value</option><option>Guaranteed Fund Value</option><option>Illustrated Fund Value</option></select>
-
+<div id="projections" style="margin-top:10px"></div>
 <button class="btn ghost" onclick="addProjection()">＋ Add Projection Row</button>
 
 <div class="actions" style="margin-top:18px">
@@ -374,7 +276,7 @@ input[type="color"]{padding:4px}
 </div>
 </div>
 </section><section id="storage" class="panel">
-
+<div id="storageContent"></div>
 </section></div></section>
 
 <section id="customize" class="app-section hidden">
@@ -393,15 +295,6 @@ input[type="color"]{padding:4px}
             <label>Upload Photo / Logo</label>
             <input id="logoFile" type="file" accept="image/*" onchange="previewLogo(event)">
             <div class="note">Saved locally in this browser.</div>
-          </div>
-
-          <div class="setting-card">
-            <h3>Profile</h3>
-            <label>Saved Name</label>
-            <input id="advisorName" type="text" value="JOSHUA SENEREZ" placeholder="e.g. JOSHUA SENEREZ">
-            <label>Position</label>
-            <input id="advisorRole" type="text" value="Premier Level Financial Advisor – Unit Manager" placeholder="e.g. Premier Level Financial Advisor – Unit Manager">
-            <div class="note">This name and position appear on the login page below the OPTIMUM logo.</div>
           </div>
 
           <div class="setting-card">
@@ -435,14 +328,14 @@ input[type="color"]{padding:4px}
             <div class="setting-actions">
               <button class="copy" onclick="copyScript()">Copy Appscript</button>
             </div>
-            
+            <div id="copyStatus" class="status"></div>
           </div>
         </div>
 
         <div class="setting-actions">
           <button class="save" onclick="saveSettings()">Save Setting</button>
         </div>
-        
+        <div id="saveStatus" class="status"></div>
       </section>
     </main>
   </div>
@@ -481,6 +374,8 @@ function login(){
     document.getElementById('appPage').classList.remove('hidden');
     document.getElementById('loggedUser').textContent=u;
     document.getElementById('loginError').textContent='';
+    const calBtn=document.querySelector('.nav-btn[data-page="calendar"]');
+    if(calBtn) showPage('calendar',calBtn);
   } else document.getElementById('loginError').textContent='Invalid username or password.';
 }
 function logout(){
@@ -500,7 +395,7 @@ function showPage(id,btn){
   document.querySelectorAll('.app-section').forEach(x=>x.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   if(id==='calendar' && typeof renderCalendar==='function') renderCalendar();
   if(id==='proposal' && typeof renderProposalTabs==='function'){ refreshPlanSelect(selectedPlan||''); renderProposalTabs(); if(typeof renderStorage==='function') renderStorage(); }
 }
@@ -576,21 +471,15 @@ function applySettings(){
   const s=settings();
   const name=(s.name||"OPTIMUM").trim()||"OPTIMUM";
   const subtitle=(s.subtitle||"Prospect and Client Servicing").trim()||"Prospect and Client Servicing";
-  const advisorName=(s.advisorName||"JOSHUA SENEREZ").trim()||"JOSHUA SENEREZ";
-  const advisorRole=(s.advisorRole||"Premier Level Financial Advisor – Unit Manager").trim()||"Premier Level Financial Advisor – Unit Manager";
   const appName=document.getElementById("appName");
   if(appName) appName.value=name;
   const appSubtitle=document.getElementById("appSubtitle");
   if(appSubtitle) appSubtitle.value=subtitle;
-  const advisorNameInput=document.getElementById("advisorName"); if(advisorNameInput) advisorNameInput.value=advisorName;
-  const advisorRoleInput=document.getElementById("advisorRole"); if(advisorRoleInput) advisorRoleInput.value=advisorRole;
   document.getElementById("topName").textContent=name;
   document.getElementById("topSubtitle").textContent=subtitle;
   document.getElementById("sideTitle").textContent=name;
   document.getElementById("loginBrand").innerHTML="<span class=\"brand-o\">O</span>PTIMUM";
   document.getElementById("loginSubtitle").textContent=subtitle;
-  const loginProfileName=document.getElementById("loginProfileName"); if(loginProfileName) loginProfileName.textContent=advisorName;
-  const loginProfileRole=document.getElementById("loginProfileRole"); if(loginProfileRole) loginProfileRole.textContent=advisorRole;
   if(s.primary) document.getElementById("primaryColor").value=s.primary;
   if(s.accent) document.getElementById("accentColor").value=s.accent;
   document.documentElement.style.setProperty("--primary",s.primary||"#12b8c4");
@@ -646,7 +535,7 @@ async function saveSettings(){
     if(logoImg && logoImg.src && logoImg.src.startsWith('data:image/')) logo=await compressLogo(logoImg.src);
     if(logo) setLogo(logo);
 
-    const s={name,subtitle,advisorName:(document.getElementById("advisorName")?.value||settings().advisorName||"JOSHUA SENEREZ").trim(),advisorRole:(document.getElementById("advisorRole")?.value||settings().advisorRole||"Premier Level Financial Advisor – Unit Manager").trim(),primary:document.getElementById("primaryColor").value,accent:document.getElementById("accentColor").value,appView:document.getElementById("appView").value,username,scriptUrl:document.getElementById("scriptUrl").value.trim()};
+    const s={name,subtitle,primary:document.getElementById("primaryColor").value,accent:document.getElementById("accentColor").value,appView:document.getElementById("appView").value,username,scriptUrl:document.getElementById("scriptUrl").value.trim()};
     const password=newPw||old.password;
 
     // Remove the previous oversized v1/v2 records before writing the compact record.
@@ -693,7 +582,7 @@ function esc(s){return String(s??'').replace(/[&<>\'"]/g,c=>({'&':'&amp;','<':'&
 function isoDate(v){if(!v)return'';v=String(v).trim();let d=new Date(v);if(!isNaN(d))return d.toISOString().slice(0,10);let m=v.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(m){let y=+m[3];if(y<100)y+=2000;return `${y}-${String(+m[1]).padStart(2,'0')}-${String(+m[2]).padStart(2,'0')}`}return''}
 function timeNorm(v){if(!v)return'';let m=String(v).match(/(\d{1,2}):?(\d{2})?\s*(AM|PM)?/i);if(!m)return'';let h=+m[1],mi=+(m[2]||0),a=(m[3]||'').toUpperCase();if(a==='PM'&&h<12)h+=12;if(a==='AM'&&h===12)h=0;return `${String(h).padStart(2,'0')}:${String(mi).padStart(2,'0')}`}
 function formatTime(s,e){return s?(e?`${s}-${e}`:s):''}
-function renderCalendar(){let y=calDate.getFullYear(),m=calDate.getMonth(),d0=new Date(y,m,1),days=new Date(y,m+1,0).getDate();document.getElementById('calMonthLabel').textContent=calDate.toLocaleString('en-US',{month:'long',year:'numeric'});let h=['SUN','MON','TUE','WED','THU','FRI','SAT'].map(x=>`<div class="cal-day-name">${x}</div>`).join(''),evs=getCalendar(),today=new Date().toISOString().slice(0,10);for(let i=0;i<42;i++){let n=i-d0.getDay()+1,d=new Date(y,m,n),ds=d.toISOString().slice(0,10),inm=n>0&&n<=days,ev=evs.filter(x=>x.date===ds);h+=`<div class="cal-cell${inm?'':' muted'}${ds===today?' today':''}"><div class="cal-num">${d.getDate()}</div>${ev.map(x=>`<div class="event-chip" style="background:${x.color||CAL_COLORS[x.type]||'#159bb0'}" onclick="editActivity('${x.id}')"><span class="event-time">${esc(formatTime(x.start,x.end))}</span>${x.title?' '+esc(x.title):''}</div>`).join('')}</div>`}document.getElementById('calendarGrid').innerHTML=h;document.getElementById('calLegend').innerHTML=CAL_TYPES.map(x=>``).join('');renderToday();renderTodos();renderActivityList()}
+function renderCalendar(){let y=calDate.getFullYear(),m=calDate.getMonth(),d0=new Date(y,m,1),days=new Date(y,m+1,0).getDate();document.getElementById('calMonthLabel').textContent=calDate.toLocaleString('en-US',{month:'long',year:'numeric'});let h=['SUN','MON','TUE','WED','THU','FRI','SAT'].map(x=>`<div class="cal-day-name">${x}</div>`).join(''),evs=getCalendar(),today=new Date().toISOString().slice(0,10);for(let i=0;i<42;i++){let n=i-d0.getDay()+1,d=new Date(y,m,n),ds=d.toISOString().slice(0,10),inm=n>0&&n<=days,ev=evs.filter(x=>x.date===ds);h+=`<div class="cal-cell${inm?'':' muted'}${ds===today?' today':''}"><div class="cal-num">${d.getDate()}</div>${ev.map(x=>`<div class="event-chip" style="background:${x.color||CAL_COLORS[x.type]||'#159bb0'}" onclick="editActivity('${x.id}')"><span class="event-time">${esc(formatTime(x.start,x.end))}</span>${x.title?' '+esc(x.title):''}</div>`).join('')}</div>`}document.getElementById('calendarGrid').innerHTML=h;document.getElementById('calLegend').innerHTML=CAL_TYPES.map(x=>`<span title="${x}" style="background:${CAL_COLORS[x]||'#159bb0'}"></span>`).join('');renderToday();renderTodos();renderActivityList()}
 function calPrev(){calDate.setMonth(calDate.getMonth()-1);renderCalendar()}function calNext(){calDate.setMonth(calDate.getMonth()+1);renderCalendar()}function calToday(){calDate=new Date();renderCalendar()}
 function renderToday(){let ds=new Date().toISOString().slice(0,10),a=getCalendar().filter(x=>x.date===ds).sort((p,q)=>(p.start||'').localeCompare(q.start||''));document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});document.getElementById('todayActivities').innerHTML=a.length?a.map(x=>`<div class="today-item"><b>${esc(formatTime(x.start,x.end))}</b> ${esc(x.title)} <span class="type-badge">${esc(x.type)}</span></div>`).join(''):'<div class="today-item">No activities today.</div>'}
 function renderTodos(){let a=getTodos();document.getElementById('todoList').innerHTML=a.length?a.map((x,i)=>`<div class="todo-item"><div><b>${esc(x.text)}</b><br><small>${x.due?'Due '+esc(x.due):'No due date'}</small></div><div class="row-actions"><button onclick="toggleTodo(${i})">${x.done?'↩':'✓ Done'}</button><button onclick="editTodo(${i})">✎</button><button onclick="deleteTodo(${i})">🗑</button></div></div>`).join(''):'<div class="todo-item"><small>No To-Do items.</small></div>'}
@@ -869,7 +758,7 @@ function calcAge(dob,asOf){
  if(m<0||(m===0&&a.getDate()<d.getDate()))age--; return age>=0?age:'';
 }
 function renderColors(){
- document.getElementById('colors').innerHTML=colors.map(c=>``).join('');
+ document.getElementById('colors').innerHTML=colors.map(c=>`<span class="swatch ${c===selectedColor?'selected':''}" style="background:${c}" onclick="selectedColor='${c}';renderColors()"></span>`).join('');
 }
 renderColors();
 renderProposalTabs();
@@ -1046,22 +935,7 @@ function showComparison(){
  const allBenefits=[...new Set(props.flatMap(p=>(p.benefits||[]).map(b=>b.name).filter(Boolean)))];
  const benefitRow=name=>`<div class="compare-row"><div>${pEsc(name)}</div>${props.map(p=>{const b=(p.benefits||[]).find(x=>x.name===name);return `<div>₱${money(b?.value||0)}</div>`}).join('')}</div>`;
  const premiumRow=(label,key)=>`<div class="compare-row"><div>${label}</div>${props.map(p=>`<div>₱${money(p[key])}</div>`).join('')}</div>`;
- w.document.write(`<!doctype html><html><head><title>${pEsc(selectedPlan)} — Premium Comparison</title><style>*{box-sizing:border-box}body{margin:0;background:#eef2f5;font-family:Arial,Helvetica,sans-serif;color:#0f172a}.page{max-width:1200px;margin:14px auto;background:#fff;padding:18px;border:1px solid #cbd5e1;border-radius:10px}.top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}.top-card{border:1px solid #CBD5E1;border-radius:9px;padding:10px}.label{font-size:8px;font-weight:900;color:#475569}.value{font-size:13px;font-weight:900;margin-top:4px}.title{color:#083B8A;font-size:20px;font-weight:900;margin-bottom:12px}.comparison-grid{display:grid;grid-template-columns:repeat(${props.length},minmax(250px,1fr));gap:10px}.compare-card{border:1px solid #CBD5E1;border-radius:10px;overflow:hidden}.compare-head{background:#4A5863;color:#fff;padding:10px;font-size:12px;font-weight:900}.compare-plan{background:#D3A400;color:#fff;padding:9px;font-weight:900}.compare-row{display:grid;grid-template-columns:1.2fr 1fr;border-bottom:1px solid #CBD5E1;font-size:10px;font-weight:700}.compare-row>div{padding:7px}.compare-row>div+div{text-align:center;border-left:1px solid #CBD5E1}.section{background:#4A5863;color:#fff;padding:7px 9px;font-size:11px;font-weight:900;margin-top:12px}.table{border:1px solid #CBD5E1;border-bottom:0}.premium{color:#ef1111;font-size:12px;font-weight:900}.total{margin-top:10px;background:#ef0909;color:#fff;padding:9px;display:grid;grid-template-columns:1fr repeat(${props.length},1fr);font-weight:900;font-size:11px}.total div{text-align:center}.actions{text-align:right;margin-bottom:8px}.actions button{border:0;background:#0b2740;color:#fff;border-radius:6px;padding:7px 10px;font-weight:800;cursor:pointer}@media(max-width:800px){.page{margin:0;padding:10px;overflow:auto}.comparison-grid{grid-template-columns:repeat(${props.length},280px);width:max-content}.top{grid-template-columns:1fr}} </style></head><body><div class="page"><div class="actions"><button onclick="window.print()">🖨 Print / PDF</button></div><div class="title">${pEsc(selectedPlan)} — Premium Comparison</div><div class="top">${props.map((p,i)=>`<div class="top-card"><div class="label">OPTION ${i+1}</div><div class="value">${pEsc(p.ownerName||'—')} · Age ${pEsc(p.ownerAge||p.age||'—')}</div><div class="value">Monthly: ₱${money(p.monthly)}</div></div>`).join('')}</div><div class="section">PREMIUM COMPARISON</div><div class="table">${premiumRow('Payment Term','paymentTerm')}${premiumRow('Monthly Premium','monthly')}${premiumRow('Quarterly Premium','quarterly')}${premiumRow('Semi-Annual Premium','semi')}${premiumRow('Annual Premium','annual')}</div><div class="section">BENEFITS</div><div class="table">${allBenefits.map(benefitRow).join('')||'<div class="compare-row"><div>No benefits encoded</div>'+props.map(()=>'<div>—</div>').join('')+'</div>'}</div><div class="total"><div>TOTAL PREMIUM PAID</div>${props.map(p=>`<div>₱${money(p.totalPaid)}</div>`).join('')}</div></div>
-<script>
-document.addEventListener('DOMContentLoaded', function(){
-  // OPTIMUM default landing page: Calendar
-  try {
-    const originalShowPage = window.showPage;
-    if (typeof originalShowPage === 'function') {
-      window.showPage = function(id, btn) {
-        return originalShowPage.apply(this, arguments);
-      };
-    }
-  } catch(e) {}
-});
-</script>
-
-</body></html>`);w.document.close();
+ w.document.write(`<!doctype html><html><head><title>${pEsc(selectedPlan)} — Premium Comparison</title><style>*{box-sizing:border-box}body{margin:0;background:#eef2f5;font-family:Arial,Helvetica,sans-serif;color:#0f172a}.page{max-width:1200px;margin:14px auto;background:#fff;padding:18px;border:1px solid #cbd5e1;border-radius:10px}.top{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}.top-card{border:1px solid #CBD5E1;border-radius:9px;padding:10px}.label{font-size:8px;font-weight:900;color:#475569}.value{font-size:13px;font-weight:900;margin-top:4px}.title{color:#083B8A;font-size:20px;font-weight:900;margin-bottom:12px}.comparison-grid{display:grid;grid-template-columns:repeat(${props.length},minmax(250px,1fr));gap:10px}.compare-card{border:1px solid #CBD5E1;border-radius:10px;overflow:hidden}.compare-head{background:#4A5863;color:#fff;padding:10px;font-size:12px;font-weight:900}.compare-plan{background:#D3A400;color:#fff;padding:9px;font-weight:900}.compare-row{display:grid;grid-template-columns:1.2fr 1fr;border-bottom:1px solid #CBD5E1;font-size:10px;font-weight:700}.compare-row>div{padding:7px}.compare-row>div+div{text-align:center;border-left:1px solid #CBD5E1}.section{background:#4A5863;color:#fff;padding:7px 9px;font-size:11px;font-weight:900;margin-top:12px}.table{border:1px solid #CBD5E1;border-bottom:0}.premium{color:#ef1111;font-size:12px;font-weight:900}.total{margin-top:10px;background:#ef0909;color:#fff;padding:9px;display:grid;grid-template-columns:1fr repeat(${props.length},1fr);font-weight:900;font-size:11px}.total div{text-align:center}.actions{text-align:right;margin-bottom:8px}.actions button{border:0;background:#0b2740;color:#fff;border-radius:6px;padding:7px 10px;font-weight:800;cursor:pointer}@media(max-width:800px){.page{margin:0;padding:10px;overflow:auto}.comparison-grid{grid-template-columns:repeat(${props.length},280px);width:max-content}.top{grid-template-columns:1fr}} </style></head><body><div class="page"><div class="actions"><button onclick="window.print()">🖨 Print / PDF</button></div><div class="title">${pEsc(selectedPlan)} — Premium Comparison</div><div class="top">${props.map((p,i)=>`<div class="top-card"><div class="label">OPTION ${i+1}</div><div class="value">${pEsc(p.ownerName||'—')} · Age ${pEsc(p.ownerAge||p.age||'—')}</div><div class="value">Monthly: ₱${money(p.monthly)}</div></div>`).join('')}</div><div class="section">PREMIUM COMPARISON</div><div class="table">${premiumRow('Payment Term','paymentTerm')}${premiumRow('Monthly Premium','monthly')}${premiumRow('Quarterly Premium','quarterly')}${premiumRow('Semi-Annual Premium','semi')}${premiumRow('Annual Premium','annual')}</div><div class="section">BENEFITS</div><div class="table">${allBenefits.map(benefitRow).join('')||'<div class="compare-row"><div>No benefits encoded</div>'+props.map(()=>'<div>—</div>').join('')+'</div>'}</div><div class="total"><div>TOTAL PREMIUM PAID</div>${props.map(p=>`<div>₱${money(p.totalPaid)}</div>`).join('')}</div></div></body></html>`);w.document.close();
 }
 function findProposal(id){for(const arr of Object.values(db.plans)){const x=arr.find(p=>p.id===id);if(x)return x}}
 function viewProposal(id){

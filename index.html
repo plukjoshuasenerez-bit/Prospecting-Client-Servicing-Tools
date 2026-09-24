@@ -195,7 +195,6 @@ input[type="color"]{padding:4px}
   <div class="layout">
     <aside class="sidebar">
       <div class="side-title" id="sideTitle">OPTIMUM</div>
-      <button class="nav-btn active" data-page="home" onclick="showPage('home',this)">🏠 <span class="nav-label">Dashboard</span></button>
       <button class="nav-btn" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
       <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this)">📅 <span class="nav-label">Calendar</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)">🎯 <span class="nav-label">Prospect</span></button>
@@ -1572,12 +1571,11 @@ body.capturing-card .benefit-card{break-inside:avoid;}
 <nav class="tabs"><div class="icon-tabs-nav">
 <button type="button" class="icon-tab-btn active" data-tab="summary" onclick="openTab('summary')"><svg class="icon-tab-svg" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h8"/><path d="M8 16h5"/></svg><span class="icon-tab-title">Client Summary</span></button>
 <button type="button" class="icon-tab-btn" data-tab="card" onclick="openTab('card')"><svg class="icon-tab-svg" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v18H6a2 2 0 0 1-2-1.5z"/><path d="M8 7h8"/><path d="M8 11h8"/></svg><span class="icon-tab-title">Refresher Card</span></button>
-<button type="button" class="icon-tab-btn" data-tab="sync" onclick="openTab('sync')"><svg class="icon-tab-svg" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2"/><path d="M3 12A9 9 0 0 1 18.5 5.8"/><path d="M7 18H3v4"/><path d="M17 6h4V2"/></svg><span class="icon-tab-title">Sync Setup</span></button>
 </div></nav>
 <main>
 
 <section id="summary" class="page active">
- <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap"><h3 style="margin:0">Client List</h3><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn" style="width:auto;margin:0;padding:9px 14px;background:#0B5ED7;color:#fff" onclick="startNewClient()">+ New Client</button><button class="btn2" style="width:auto;margin:0;padding:9px 14px" title="Upload PRISM Policy PDF to auto-add a new client (overwrites if same policy number)" onclick="hprPdfPickNewClient()">📄 Upload PDF (auto-add)</button><button class="ghost" style="width:auto;margin:0;padding:8px 12px;font-size:12px;border-color:#0B5ED7;color:#0B5ED7" onclick="document.getElementById('clientSummaryCsvUpload').click()">⬆ Upload CSV</button><input id="clientSummaryCsvUpload" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain" class="hidden" onchange="importClientCsvFile(this); this.value='';"></div></div><div class="grid" style="margin-bottom:12px"><div><label>Search Client List</label><input id="clientListSearch" placeholder="Search policy #, owner, insured, mobile, email, status..." oninput="renderClientRows()"></div><div><label>Status Filter</label><select id="clientStatusFilter" onchange="renderClientRows()"><option>All</option><option>Inforce</option><option>Lapse</option><option>Reinstate</option><option>Surrendered</option></select></div></div><div class="tablebox"><table><thead><tr><th>Edit</th><th>Policy Number</th><th>Policy Owner</th><th>Policy Insured</th><th>Mobile Number</th><th>Email</th><th>Birthday</th><th>Status</th><th>Effectivity Date</th><th>Reinstatement Date</th><th>Last Due Date</th><th>Annual Premium</th><th>FB Link</th><th>Action</th></tr></thead><tbody id="clientSummaryRows"></tbody></table></div></div>
+ <div class="card"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap"><h3 style="margin:0">Client List</h3><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button class="btn" style="width:auto;margin:0;padding:9px 14px;background:#0B5ED7;color:#fff" onclick="startNewClient()">+ New Client</button><button class="btn2" style="width:auto;margin:0;padding:9px 14px" title="Upload PRISM Policy PDF to auto-add a new client (overwrites if same policy number)" onclick="hprPdfPickNewClient()">📄 Upload PDF (auto-add)</button><button class="ghost" style="width:auto;margin:0;padding:8px 12px;font-size:12px;border-color:#0B5ED7;color:#0B5ED7" onclick="document.getElementById('clientSummaryCsvUpload').click()">⬆ Upload Excel/CSV</button><input id="clientSummaryCsvUpload" type="file" accept=".csv,.txt,.tsv,.xlsx,.xls,text/csv,text/plain" class="hidden" onchange="importClientCsvFile(this); this.value='';"></div></div><div class="grid" style="margin-bottom:12px"><div><label>Search Client List</label><input id="clientListSearch" placeholder="Search policy #, owner, insured, mobile, email, status..." oninput="renderClientRows()"></div><div><label>Status Filter</label><select id="clientStatusFilter" onchange="renderClientRows()"><option>All</option><option>Inforce</option><option>Lapse</option><option>Reinstate</option><option>Surrendered</option></select></div></div><div class="tablebox"><table><thead><tr><th>Edit</th><th>Policy Number</th><th>Policy Owner</th><th>Policy Insured</th><th>Mobile Number</th><th>Email</th><th>Birthday</th><th>Status</th><th>Effectivity Date</th><th>Reinstatement Date</th><th>Last Due Date</th><th>Annual Premium</th><th>FB Link</th><th>Action</th></tr></thead><tbody id="clientSummaryRows"></tbody></table></div></div>
 </section>
 
 <div id="clientSummaryModal" class="modal-backdrop hidden">
@@ -2947,10 +2945,16 @@ function csvListToBenefitArray_(raw,names){
 }
 function cleanHeader(h){return String(h||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
 function getCsvVal(obj,names){for(const n of names){const k=cleanHeader(n); if(obj[k]!=null && String(obj[k]).trim()!=='')return String(obj[k]).trim();} return '';}
+function hprEnsureXLSX(){ return new Promise(function(res,rej){ if(window.XLSX)return res(); var sc=document.createElement('script'); sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; sc.onload=function(){res();}; sc.onerror=function(){rej(new Error('no-xlsx'));}; document.head.appendChild(sc); }); }
 async function importClientCsvFile(input){
   const f=input.files&&input.files[0]; if(!f)return;
   let text='';
-  try{text=await readTextFile_(f);}catch(e){alert('Unable to read CSV file. Please save as CSV UTF-8 and try again.'); input.value=''; return;}
+  if(/\.xlsx?$/i.test(f.name)){
+    try{ await hprEnsureXLSX(); const buf=await f.arrayBuffer(); const wb=XLSX.read(buf,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; text=XLSX.utils.sheet_to_csv(ws); }
+    catch(e){ alert('Hindi ma-load ang Excel reader (baka walang internet). I-save muna ang Excel as CSV (File \u2192 Save As \u2192 CSV) tapos i-upload.'); input.value=''; return; }
+  } else {
+    try{text=await readTextFile_(f);}catch(e){alert('Unable to read file. Please save as CSV UTF-8 and try again.'); input.value=''; return;}
+  }
   const rows=csvParse(text); if(rows.length<2){alert('CSV has no data.'); input.value=''; return;}
   const headers=rows[0].map(cleanHeader);
   const importedClients=[], importedBenefits=[];
@@ -2968,6 +2972,7 @@ async function importClientCsvFile(input){
       emailAddress:getCsvVal(raw,['Email','Email Address']),
       birthday:getCsvVal(raw,['Birthday','Birth Date','Bday']),
       status:getCsvVal(raw,['Status'])||'Inforce',
+      mode:getCsvVal(raw,['Billing Frequency','Mode','Billing','Frequency','Payment Mode']),
       effectivity:getCsvVal(raw,['Effectivity Date','Effectivity','Effective Date']),
       newEffectivity:getCsvVal(raw,['Reinstatement Date','New Effectivity','New Effectivity Date']),
       lastDueDate:getCsvVal(raw,['Last Due Date','Last Premium Due','Premium Due Date','Last DueDate','Due Date','DueDate']),
@@ -9660,6 +9665,29 @@ function showClientRef(which,btn){ try{ showPage('clientref',btn); }catch(e){}
   if(!f.getAttribute('srcdoc')){ var h=document.getElementById('prismSrcHtml').textContent.split('<<<ENDSCR>>>').join('<'+'/script>'); f.addEventListener('load',doOpen,{once:true}); f.setAttribute('srcdoc',h); }
   else { doOpen(); }
 }
+</script>
+
+<script>
+(function(){function initNavReorder(){
+ var btns=document.querySelectorAll('aside.sidebar .nav-btn'); if(!btns.length)return; var container=btns[0].parentElement; if(container._reord)return; container._reord=true;
+ var timer=null,dragEl=null,didDrag=false;
+ function lift(el){ dragEl=el; didDrag=true; el.style.opacity='0.9'; el.style.transform='scale(1.03)'; el.style.boxShadow='0 10px 26px rgba(0,0,0,.5)'; el.style.borderRadius='10px'; el.style.position='relative'; el.style.zIndex='20'; if(navigator.vibrate)try{navigator.vibrate(20);}catch(e){} }
+ function drop(){ if(dragEl){ dragEl.style.opacity=''; dragEl.style.transform=''; dragEl.style.boxShadow=''; dragEl.style.borderRadius=''; dragEl.style.zIndex=''; saveOrder(); dragEl=null; setTimeout(function(){didDrag=false;},60); } clearTimeout(timer); }
+ function moveTo(y){ if(!dragEl)return; var sibs=Array.prototype.slice.call(container.querySelectorAll('.nav-btn')).filter(function(x){return x!==dragEl;}); var placed=false; for(var i=0;i<sibs.length;i++){ var r=sibs[i].getBoundingClientRect(); if(y<r.top+r.height/2){ container.insertBefore(dragEl,sibs[i]); placed=true; break; } } if(!placed){ var last=sibs[sibs.length-1]; if(last){ if(last.nextSibling) container.insertBefore(dragEl,last.nextSibling); else container.appendChild(dragEl); } } }
+ function saveOrder(){ try{ var o=Array.prototype.map.call(container.querySelectorAll('.nav-btn'),function(b){return b.getAttribute('data-page');}); localStorage.setItem('optimumNavOrder',JSON.stringify(o)); }catch(e){} }
+ function restoreOrder(){ try{ var o=JSON.parse(localStorage.getItem('optimumNavOrder')||'null'); if(!o)return; o.forEach(function(pg){ var b=container.querySelector('.nav-btn[data-page="'+pg+'"]'); if(b) container.appendChild(b); }); }catch(e){} }
+ restoreOrder();
+ container.addEventListener('mousedown',function(e){ if(e.button!==0)return; var b=e.target.closest&&e.target.closest('.nav-btn'); if(!b)return; timer=setTimeout(function(){lift(b);},400); });
+ document.addEventListener('mousemove',function(e){ if(dragEl){ e.preventDefault(); moveTo(e.clientY);} });
+ document.addEventListener('mouseup',drop);
+ container.addEventListener('touchstart',function(e){ var b=e.target.closest&&e.target.closest('.nav-btn'); if(!b)return; var t=e.touches[0]; timer=setTimeout(function(){lift(b);},400); },{passive:true});
+ document.addEventListener('touchmove',function(e){ if(dragEl){ e.preventDefault(); moveTo(e.touches[0].clientY);} },{passive:false});
+ document.addEventListener('touchend',drop);
+ container.addEventListener('click',function(e){ if(didDrag){ e.preventDefault(); e.stopPropagation(); } },true);
+ try{ btns[0].setAttribute('title','Long-press para i-galaw pataas/pababa ang tab.'); }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initNavReorder); else initNavReorder();
+})();
 </script>
 </body>
 </html>

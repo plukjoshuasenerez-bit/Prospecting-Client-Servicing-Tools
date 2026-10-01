@@ -505,7 +505,7 @@ function applySettings(){
   const logo=getLogo();
   if(logo){
     document.getElementById("logoPreview").innerHTML='<img src="'+logo+'" alt="Logo">';
-    document.getElementById("topMark").innerHTML='<img src="'+logo+'" alt="Logo">';
+    /* header photo removed on open per request */
   }
 }
 
@@ -662,7 +662,7 @@ function prospectLine(p){
  const chat=url?`<a class="prospect-chatbtn" href="${ptEscapeAttr(url)}" target="_blank" rel="noopener" onclick="chatProspect(${i})" title="Open Messenger">💬</a>`:`<span class="prospect-chatbtn disabled" title="Add Messenger link in Edit">💬</span>`;
  const stageClass={"Approach":"approach","Setting Appointment":"setting","Done Client Meeting":"meeting","For Closing":"closing","Closed":"closed"}[p.engagement]||'approach';
  const stageOptions=['Approach','Setting Appointment','Done Client Meeting','For Closing','Closed'].map(x=>`<option value="${x}" ${p.engagement===x?'selected':''}>${x}</option>`).join('');
- return `<div class="prospect-line"><div class="prospect-chatbox"><div class="prospect-chat-top">${chat}<span class="prospect-approach-count">${count}</span></div><span class="prospect-age-running ${a.cls}">${a.label}</span></div><div class="prospect-field"><b>${safeText(p.name||'')}</b><div class="prospect-muted">${safeText(p.contact||'')}</div></div><div class="prospect-field">${safeText(p.occupation||'—')}</div><div class="prospect-field" title="Source">${safeText(p.leadSource||p.source2||'—')}</div><div class="prospect-field" title="Birthday: ${safeText(p.birthday||'—')}">${safeText((p.age||ptAgeFromBday(p.birthday)||'—')+(p.age||ptAgeFromBday(p.birthday)?' yo':''))}</div><div class="prospect-field">${safeText(p.plan||'—')}</div><div class="prospect-field">${ptMoney(p.ape)}</div><div class="prospect-field"><select class="prospect-stage-select ${stageClass}" onchange="updateP(${i},'engagement',this.value)">${stageOptions}</select></div><div class="prospect-field"><span class="prospect-status-pill">${safeText(p.status||'Active')}</span></div><div class="prospect-field"><div class="prospect-remark">${remarks||'—'}</div></div><div class="prospect-actions-cell"><button class="prospect-edit-icon" onclick="editProspect(${i})" title="Edit prospect" aria-label="Edit prospect">✎</button><button class="prospect-delete-icon" onclick="deleteProspect(${i})" title="Delete prospect" aria-label="Delete prospect">🗑</button></div></div>`
+ return `<div class="prospect-line"><div class="prospect-chatbox"><div class="prospect-chat-top">${chat}<span class="prospect-approach-count">${count}</span></div><span class="prospect-age-running ${a.cls}">${a.label}</span></div><div class="prospect-field"><b>${safeText(p.name||'')}</b><div class="prospect-muted">${safeText(p.contact||'')}</div></div><div class="prospect-field">${safeText(p.occupation||'—')}</div><div class="prospect-field">${safeText(p.plan||'—')}</div><div class="prospect-field">${ptMoney(p.ape)}</div><div class="prospect-field"><select class="prospect-stage-select ${stageClass}" onchange="updateP(${i},'engagement',this.value)">${stageOptions}</select></div><div class="prospect-field"><span class="prospect-status-pill">${safeText(p.status||'Active')}</span></div><div class="prospect-field"><div class="prospect-remark">${remarks||'—'}</div></div><div class="prospect-actions-cell"><button class="prospect-edit-icon" onclick="editProspect(${i})" title="Edit prospect" aria-label="Edit prospect">✎</button><button class="prospect-delete-icon" onclick="deleteProspect(${i})" title="Delete prospect" aria-label="Delete prospect">🗑</button></div></div>`
 }
 function deleteProspect(i){if(!confirm('Delete this prospect?'))return;prospects.splice(i,1);ptSave();renderProspectTracker()}
 function meetingEndTime(start,minutes){
@@ -9739,6 +9739,11 @@ setInterval(function(){ try{ var f=document.getElementById("prismFrame"); if(f&&
 
 <style id="optimum-kpi-only">
 .prospect-kpi{border:1px solid #edf2f9!important;border-radius:14px!important;box-shadow:0 2px 10px rgba(16,24,40,.06)!important;background:#fff!important}
+</style>
+
+<style id="optimum-filter-soft">
+#ptFilterMonth,#ptFilterYear,#ptFilterPlan,#ptFilterOccupation,#ptSearch{border:1px solid #edf2f9!important;border-radius:12px!important;box-shadow:0 1px 4px rgba(16,24,40,.05)!important;padding:9px 12px!important;background:#fff!important;outline:none!important}
+#ptFilterMonth:focus,#ptFilterYear:focus,#ptFilterPlan:focus,#ptFilterOccupation:focus,#ptSearch:focus{border-color:#cdd9ea!important;box-shadow:0 2px 9px rgba(16,24,40,.09)!important}
 </style>
 </body>
 </html>

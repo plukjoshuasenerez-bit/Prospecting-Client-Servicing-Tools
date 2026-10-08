@@ -323,6 +323,12 @@ input[type="color"]{padding:4px}
 <section id="customize" class="app-section hidden">
         <h1 class="page-title">Customize</h1>
         <p class="page-sub">Personalize OPTIMUM and configure the limited Apps Script connection.</p>
+        <div id="optAgentMgmt" style="display:none;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
+          <h3 style="margin:0 0 6px">👥 Agent Management</h3>
+          <p style="font-size:13px;color:#666;margin:0 0 12px">Mag-add ng agents at pamahalaan ang accounts nila. Pindutin ang <b>Open</b> para makita/i-manage ang workspace ng isang agent, o <b>My Workspace</b> para bumalik sa sarili mong view.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button onclick="optAddAgent()" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;cursor:pointer">+ Add Agent</button><button onclick="optGoMyWorkspace()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">My Workspace</button></div>
+          <div id="optAgentMgmtList"></div>
+        </div>
         <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
           <h3 style="margin:0 0 6px">💾 Data Backup &amp; Restore</h3>
           <p style="font-size:13px;color:#666;margin:0 0 12px">I-download ang backup ng LAHAT ng data (clients, proposals, refresher card, settings, pictures). I-restore ito mula sa PC (o Google Drive file).</p>
@@ -9940,6 +9946,13 @@ function optClearPrismCache(){ if(!confirm("I-clear ang naka-cache na Policy Rev
 </script>
 
 <style id="opt-cloud-css">
+.optam-row{display:grid;grid-template-columns:1.4fr 1fr auto;gap:10px;align-items:center;padding:10px 6px;border-bottom:1px solid #eef2f7;font-size:14px}
+.optam-head{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.3px}
+.optam-nm{font-weight:700;color:#0f172a}.optam-u{color:#64748b;font-size:13px}
+.optam-act{display:flex;gap:6px;justify-content:flex-end}
+.optam-open{border:0;background:#2563eb;color:#fff;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer}
+.optam-del{border:0;background:#fee2e2;color:#dc2626;border-radius:8px;padding:7px 14px;font-weight:700;cursor:pointer}
+
 #optOverlay{position:fixed;inset:0;z-index:2147483000;background:transparent;display:flex;align-items:center;justify-content:center;padding:36px 16px;overflow:auto}
 body.opt-ov #loginPage{display:flex!important}
 body.opt-ov #loginPage>*{visibility:hidden!important}
@@ -10066,10 +10079,16 @@ body.opt-ov #appPage{display:none!important}
     var username=prompt('Username (para sa login):');if(!username)return;
     var password=prompt('Password:');if(!password)return;
     API.addAgent({name:name,username:username,password:password}).then(function(r){
-      if(!r.ok){alert(r.j.error||'Failed');return;}showAdminConsole();
+      if(!r.ok){alert(r.j.error||'Failed');return;}alert('Agent added: '+name);if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();try{renderAdminBar(ss.getItem('optAgentId')||'admin');}catch(e){}
     });
   }
   function openAgent(aid){ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();}
+  function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}var list=r.j.agents||[];var cur=ss.getItem('optAgentId')||'admin';var head='<div class="optam-row optam-head"><span>Agent</span><span>Username</span><span>Actions</span></div>';var rows=list.length?list.map(function(a){return '<div class="optam-row"><span class="optam-nm">'+esc(a.name)+(a.id===cur?' <b style=\"color:#16a34a\">(viewing)</b>':'')+'</span><span class="optam-u">@'+esc(a.username)+'</span><span class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></span></div>';}).join(''):'<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';box.innerHTML=head+rows;});}
+  window.optAddAgent=addAgentFlow;
+  window.optOpenAgent=openAgent;
+  window.optDelAgent=function(id){if(!confirm('Alisin ang agent na ito? Mabubura ang data nila.'))return;API.delAgent(id).then(function(){optRenderAgentsInSettings();try{renderAdminBar(ss.getItem('optAgentId')||'admin');}catch(e){}});};
+  window.optRenderAgentsInSettings=optRenderAgentsInSettings;
+  window.optGoMyWorkspace=function(){pushNow(function(){ss.setItem('optAgentId','admin');ss.removeItem('optHydratedFor');boot();});};
 
   // ---------- admin bar atop app ----------
   function renderAdminBar(activeId){
@@ -10091,7 +10110,7 @@ body.opt-ov #appPage{display:none!important}
     try{document.getElementById('loginPage').classList.add('hidden');document.getElementById('appPage').classList.remove('hidden');}catch(e){}
     var u=user();
     try{var lu=document.getElementById('loggedUser');if(lu)lu.textContent=u?u.name:'';}catch(e){}
-    if(u&&u.role==='admin'){renderAdminBar(ss.getItem('optAgentId'));}
+    if(u&&u.role==='admin'){renderAdminBar(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
     dirty=false;setSaveNote('');
   }
 
@@ -10104,9 +10123,8 @@ body.opt-ov #appPage{display:none!important}
     if(u.role==='agent'){
       if(ss.getItem('optHydratedFor')===u.id){startApp();}else{hydrate(u.id);}
     } else { // admin
-      var aid=ss.getItem('optAgentId');
-      if(!aid){showAdminConsole();}
-      else if(ss.getItem('optHydratedFor')===aid){startApp();}
+      var aid=ss.getItem('optAgentId')||'admin';
+      if(ss.getItem('optHydratedFor')===aid){startApp();}
       else{hydrate(aid);}
     }
   }

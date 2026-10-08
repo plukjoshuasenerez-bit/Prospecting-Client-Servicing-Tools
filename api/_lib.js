@@ -1,26 +1,36 @@
-// Shared helpers: KV (Upstash/Vercel KV REST), password hashing, tokens. No external deps.
+// Shared helpers: Neon Postgres (HTTP serverless) KV table, password hashing, tokens.
 const crypto = require('crypto');
+const { neon } = require('@neondatabase/serverless');
 
-function kvCreds() {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  return { url, token };
+function dbUrl() {
+  return process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL
+      || process.env.POSTGRES_URL_NON_POOLING || process.env.DATABASE_URL_UNPOOLED || process.env.NEON_DATABASE_URL;
 }
-async function kvCmd(cmd) {
-  const { url, token } = kvCreds();
-  if (!url || !token) throw new Error('KV not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN (or UPSTASH_REDIS_REST_URL/TOKEN) in Vercel env.');
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cmd)
-  });
-  if (!res.ok) throw new Error('KV error ' + res.status + ': ' + (await res.text()).slice(0,200));
-  const j = await res.json();
-  return j.result;
+let _sql = null;
+function getSql() {
+  const url = dbUrl();
+  if (!url) throw new Error('Database not configured. Connect a Neon Postgres database to this Vercel project (it sets DATABASE_URL / POSTGRES_URL), then Redeploy.');
+  if (!_sql) _sql = neon(url);
+  return _sql;
 }
-const kvGet = (k) => kvCmd(['GET', k]);
-const kvSet = (k, v) => kvCmd(['SET', k, v]);
-const kvDel = (k) => kvCmd(['DEL', k]);
+let _ready = null;
+async function ensureTable() {
+  if (!_ready) { const sql = getSql(); _ready = sql`CREATE TABLE IF NOT EXISTS kv (k text PRIMARY KEY, v text)`; }
+  await _ready;
+}
+async function kvGet(k) {
+  await ensureTable();
+  const rows = await getSql()`SELECT v FROM kv WHERE k = ${k}`;
+  return rows.length ? rows[0].v : null;
+}
+async function kvSet(k, v) {
+  await ensureTable();
+  await getSql()`INSERT INTO kv (k, v) VALUES (${k}, ${v}) ON CONFLICT (k) DO UPDATE SET v = ${v}`;
+}
+async function kvDel(k) {
+  await ensureTable();
+  await getSql()`DELETE FROM kv WHERE k = ${k}`;
+}
 
 const USERS_KEY = 'optimum:users';
 const dataKey = (id) => 'optimum:data:' + id;

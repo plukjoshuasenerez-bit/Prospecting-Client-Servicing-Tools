@@ -1,0 +1,7 @@
+{
+  "name": "optimum-team",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OPTIMUM - multi-agent prospect/recruitment/activity monitoring (Vercel + KV)",
+  "engines": { "node": ">=18" }
+}

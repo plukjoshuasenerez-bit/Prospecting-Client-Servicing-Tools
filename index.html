@@ -257,14 +257,17 @@ input[type="color"]{padding:4px}
       <section id="activitylog" class="app-section hidden">
   <h1 class="page-title">Activity Log</h1>
   <p class="page-sub">I-log ang araw-araw na activities at tingnan ang buwanang points report.</p>
-  <div class="alog-tabs"><button class="alog-tab active" onclick="alogShowTab('log',this)">Activity Log</button><button class="alog-tab" onclick="alogShowTab('report',this)">Activity Report</button></div>
+  <div class="alog-tabs"><button class="alog-tab active" onclick="alogShowTab('log',this)">Activity Log</button><button class="alog-tab" onclick="alogShowTab('report',this)">Activity Report</button><button class="alog-tab" onclick="alogShowTab('rank',this)">🏆 Ranking</button></div>
   <div id="alogLogView">
-    <div class="card"><h3 style="margin:0 0 12px">+ Add Activity (new type)</h3><div class="alog-addtype"><div><label>Activity Name</label><input id="alogNewName" placeholder="e.g. Webinar"></div><div><label>Points per Count</label><input id="alogNewPts" type="number" min="0" value="1"></div><button class="alog-save" onclick="alogAddType()">+ Add Activity</button></div></div>
+    <div class="card" id="alogAddTypeCard"><h3 style="margin:0 0 12px">+ Add Activity (new type)</h3><div class="alog-addtype"><div><label>Activity Name</label><input id="alogNewName" placeholder="e.g. Webinar"></div><div><label>Points per Count</label><input id="alogNewPts" type="number" min="0" value="1"></div><button class="alog-save" onclick="alogAddType()">+ Add Activity</button></div></div>
     <div class="card" style="margin-top:14px"><div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-bottom:14px"><div><label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:4px">Date</label><input id="alogDate" type="date" style="padding:10px 12px;border:1px solid #e3e8ef;border-radius:10px"></div><button class="alog-save" onclick="alogSaveLog()">Save</button></div><div id="alogTypeList"></div></div>
     <div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">Logged Activities</h3><div id="alogList"></div></div>
   </div>
   <div id="alogReportView" style="display:none">
-    <div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="font-weight:700">Month</label><input id="alogReportMonth" type="month" onchange="alogRenderReport()"></div><div id="alogReportSummary" style="margin-top:14px"></div><div id="alogReportChart" style="margin-top:18px"></div></div>
+    <div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><label style="font-weight:700">Month</label><input id="alogReportMonth" type="month" onchange="alogRenderReport()"></div><div id="alogReportSummary" style="margin-top:14px"></div><div id="alogDailyChart" style="margin-top:22px"></div><div id="alogReportChart" style="margin-top:22px"></div></div>
+  </div>
+  <div id="alogRankView" style="display:none">
+    <div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div><h3 style="margin:0">🏆 Agent Ranking</h3><p class="page-sub" style="margin:4px 0 0">Ranking ng lahat ng agents base sa total points na na-encode.</p></div><div style="display:flex;gap:8px;align-items:center"><label style="font-weight:700">Month</label><input id="alogRankMonth" type="month" onchange="alogRenderRanking()"><button class="alog-save" onclick="alogRenderRanking()">Refresh</button></div></div><div id="alogRankList" style="margin-top:16px"></div></div>
   </div>
 </section>
 <section id="recruit" class="app-section hidden">
@@ -650,11 +653,11 @@ function renderCalendar(){let y=calDate.getFullYear(),m=calDate.getMonth(),d0=ne
 function calPrev(){calDate.setMonth(calDate.getMonth()-1);renderCalendar()}function calNext(){calDate.setMonth(calDate.getMonth()+1);renderCalendar()}function calToday(){calDate=new Date();renderCalendar()}
 function renderToday(){let ds=new Date().toISOString().slice(0,10),a=getCalendar().filter(x=>x.date===ds).sort((p,q)=>(p.start||'').localeCompare(q.start||''));document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});document.getElementById('todayActivities').innerHTML=a.length?a.map(x=>`<div class="today-item"><b>${esc(formatTime(x.start,x.end))}</b> ${esc(x.title)} <span class="type-badge">${esc(x.type)}</span></div>`).join(''):'<div class="today-item">No activities today.</div>'}
 function renderTodos(){let a=getTodos();document.getElementById('todoList').innerHTML=a.length?a.map((x,i)=>`<div class="todo-item"><div><b>${esc(x.text)}</b><br><small>${x.due?'Due '+esc(x.due):'No due date'}</small></div><div class="row-actions"><button onclick="toggleTodo(${i})">${x.done?'↩':'✓ Done'}</button><button onclick="editTodo(${i})">✎</button><button onclick="deleteTodo(${i})">🗑</button></div></div>`).join(''):'<div class="todo-item"><small>No To-Do items.</small></div>'}
-function renderActivityList(){let f=document.getElementById('listFilter').value,a=getCalendar().filter(x=>f==='all'||x.type===f).sort((p,q)=>(p.date+p.start).localeCompare(q.date+q.start));document.getElementById('activityList').innerHTML=a.length?a.map(x=>`<div class="activity-row"><div class="activity-main"><b>${esc(x.title)}</b><br><small>${esc(x.date)} ${esc(formatTime(x.start,x.end))}${x.person?' • '+esc(x.person):''}</small></div><span class="type-badge">${esc(x.type)}</span><div class="row-actions"><button title="Add to Google Calendar" onclick="optimumAddToGCal(\'${x.id}\')">📅</button><button onclick="editActivity('${x.id}')">✎</button><button onclick="deleteActivity('${x.id}')">🗑</button></div></div>`).join(''):'<div class="activity-row"><small>No activities found.</small></div>'}
+function renderActivityList(){let f=document.getElementById('listFilter').value,a=getCalendar().filter(x=>f==='all'||x.type===f).sort((p,q)=>(p.date+p.start).localeCompare(q.date+q.start));document.getElementById('activityList').innerHTML=a.length?a.map(x=>`<div class="activity-row"><div class="activity-main"><b>${esc(x.title)}</b>${x._shared?' <span class="opt-shared-badge">📢 shared</span>':''}<br><small>${esc(x.date)} ${esc(formatTime(x.start,x.end))}${x.person?' • '+esc(x.person):''}</small></div><span class="type-badge">${esc(x.type)}</span><div class="row-actions"><button title="Add to Google Calendar" onclick="optimumAddToGCal(\'${x.id}\')">📅</button><button class="opt-admin-only" title="Share to all agents" onclick="optShareEventById('${x.id}')">📢</button><button onclick="editActivity('${x.id}')">✎</button><button onclick="deleteActivity('${x.id}')">🗑</button></div></div>`).join(''):'<div class="activity-row"><small>No activities found.</small></div>'}
 function modal(s,extra=''){let d=document.createElement('div');d.className='modal-back';d.id='calModal';d.innerHTML=`<div class="modal ${extra}">${s}</div>`;document.body.appendChild(d)}function closeModal(){document.getElementById('calModal')?.remove()}
 const ACTIVITY_COLORS=['#2f80ed','#12a653','#e3262e','#e31b75','#d43787','#ff9848','#f4c63d','#13a2b8','#9950df'];
 function selectActivityColor(c){document.querySelectorAll('#activityColors .color-swatch').forEach(b=>b.classList.toggle('selected',b.dataset.color===c));document.getElementById('mColor').value=c}
-function openActivityEditor(x){x=x||{};let currentColor=x.color||CAL_COLORS[x.type]||'#e3262e';let types=[...new Set([...CAL_TYPES,'Training','Meeting','Coaching'])];modal(`<div class="activity-head"><h2>${x.id?'Edit':'Add'} Activity</h2><button class="activity-close" onclick="closeModal()" aria-label="Close">×</button></div><div class="activity-form"><div class="activity-field full"><label>Title *</label><input id="mTitle" value="${esc(x.title||'')}" placeholder="Activity title"></div><div class="activity-field"><label>Date *</label><input id="mDate" type="date" value="${x.date||new Date().toISOString().slice(0,10)}"></div><div class="activity-field"><label>Type</label><select id="mType">${types.map(t=>`<option ${t===(x.type||'Activity')?'selected':''}>${t}</option>`).join('')}</select></div><div class="activity-field"><label>Start Time</label><input id="mStart" type="time" value="${x.start||''}"></div><div class="activity-field"><label>End Time</label><input id="mEnd" type="time" value="${x.end||''}"></div><div class="activity-field full"><label>Color</label><div class="color-wrap" id="activityColors">${ACTIVITY_COLORS.map(c=>`<button type="button" class="color-swatch ${c===currentColor?'selected':''}" data-color="${c}" style="background:${c}" onclick="selectActivityColor('${c}')" aria-label="${c}"></button>`).join('')}</div><input id="mColor" type="hidden" value="${currentColor}"></div><div class="activity-field"><label>Host</label><input id="mPerson" value="${esc(x.person||x.host||'')}" placeholder="Host name"></div><div class="activity-field"><label>Zoom Details</label><input id="mZoom" value="${esc(x.zoom||x.zoomDetails||'')}" placeholder="ID: ..., PW: ..."></div><div class="activity-field full"><label>Location</label><input id="mLocation" value="${esc(x.location||'')}" placeholder="Location / meeting room / online"></div><div class="activity-field full"><label>Notes</label><textarea id="mNotes" placeholder="Add notes...">${esc(x.notes||'')}</textarea></div></div><div class="activity-actions"><button class="activity-cancel" onclick="closeModal()">Cancel</button><button class="activity-save" style="background:#16a34a;padding:10px 14px" title="Add to Google Calendar" onclick="optimumAddToGCalFromForm()">📅</button><button class="activity-save" onclick="saveActivity('${x.id||''}')">Save Activity</button></div>`, 'activity-modal')}
+function openActivityEditor(x){x=x||{};let currentColor=x.color||CAL_COLORS[x.type]||'#e3262e';let types=[...new Set([...CAL_TYPES,'Training','Meeting','Coaching'])];modal(`<div class="activity-head"><h2>${x.id?'Edit':'Add'} Activity</h2><button class="activity-close" onclick="closeModal()" aria-label="Close">×</button></div><div class="activity-form"><div class="activity-field full"><label>Title *</label><input id="mTitle" value="${esc(x.title||'')}" placeholder="Activity title"></div><div class="activity-field"><label>Date *</label><input id="mDate" type="date" value="${x.date||new Date().toISOString().slice(0,10)}"></div><div class="activity-field"><label>Type</label><select id="mType">${types.map(t=>`<option ${t===(x.type||'Activity')?'selected':''}>${t}</option>`).join('')}</select></div><div class="activity-field"><label>Start Time</label><input id="mStart" type="time" value="${x.start||''}"></div><div class="activity-field"><label>End Time</label><input id="mEnd" type="time" value="${x.end||''}"></div><div class="activity-field full"><label>Color</label><div class="color-wrap" id="activityColors">${ACTIVITY_COLORS.map(c=>`<button type="button" class="color-swatch ${c===currentColor?'selected':''}" data-color="${c}" style="background:${c}" onclick="selectActivityColor('${c}')" aria-label="${c}"></button>`).join('')}</div><input id="mColor" type="hidden" value="${currentColor}"></div><div class="activity-field"><label>Host</label><input id="mPerson" value="${esc(x.person||x.host||'')}" placeholder="Host name"></div><div class="activity-field"><label>Zoom Details</label><input id="mZoom" value="${esc(x.zoom||x.zoomDetails||'')}" placeholder="ID: ..., PW: ..."></div><div class="activity-field full"><label>Location</label><input id="mLocation" value="${esc(x.location||'')}" placeholder="Location / meeting room / online"></div><div class="activity-field full"><label>Notes</label><textarea id="mNotes" placeholder="Add notes...">${esc(x.notes||'')}</textarea></div></div><div class="activity-actions"><button class="activity-cancel" onclick="closeModal()">Cancel</button><button class="activity-save" style="background:#16a34a;padding:10px 14px" title="Add to Google Calendar" onclick="optimumAddToGCalFromForm()">📅</button><button class="activity-save opt-admin-only" style="background:#7c3aed;padding:10px 14px" title="Share to all agents" onclick="optShareEventFromModal('${x.id||''}')">📢 Share</button><button class="activity-save" onclick="saveActivity('${x.id||''}')">Save Activity</button></div>`, 'activity-modal')}
 function optimumGCalUrl(title,date,start,end,location,details){ var d=(date||'').replace(/-/g,''); var dates; if(start){ var s=d+'T'+(start.replace(/:/g,''))+'00'; var e=d+'T'+((end||start).replace(/:/g,''))+'00'; dates=s+'/'+e; } else { dates=d+'/'+d; } return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title||'Activity')+'&dates='+dates+(details?('&details='+encodeURIComponent(details)):'')+(location?('&location='+encodeURIComponent(location)):''); }
 function optimumAddToGCal(id){ try{ var cal=(typeof getCalendar==="function"?getCalendar():[]); var x=(cal||[]).filter(function(z){return z.id===id;})[0]; if(!x){ alert("Activity not found."); return; } window.open(optimumGCalUrl(x.title,x.date,x.start,x.end,x.location,x.notes),"_blank"); }catch(e){ alert("Error: "+e.message); } }
 function optimumAddToGCalFromForm(){ var g=function(id){var el=document.getElementById(id);return el?el.value:'';}; var title=g('mTitle'),date=g('mDate'),start=g('mStart'),end=g('mEnd'),loc=g('mLocation'),notes=g('mNotes'); if(!date||!title){ alert('Date at Activity title muna bago i-add sa Google Calendar.'); return; } window.open(optimumGCalUrl(title,date,start,end,loc,notes),'_blank'); }
@@ -9831,6 +9834,32 @@ setInterval(function(){ try{ var f=document.getElementById("prismFrame"); if(f&&
 .alog-bar-track{background:#eef2f7;border-radius:99px;height:22px;overflow:hidden}
 .alog-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#0e7490,#22d3ee)}
 .alog-bar-val{font-weight:900;color:#0e7490;text-align:right}
+/* ---- role gating ---- */
+body.opt-role-agent [data-page="customize"]{display:none!important}
+body.opt-role-agent #alogAddTypeCard{display:none!important}
+body.opt-role-agent #alogTypeList .alog-tactions{display:none!important}
+body:not(.opt-role-admin) .opt-admin-only{display:none!important}
+/* ---- admin agent picker ---- */
+#optAgentPicker{display:none;margin-left:8px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:9px;font-weight:700;color:#0f172a;background:#fff;max-width:210px;cursor:pointer}
+body.opt-role-admin #optAgentPicker{display:inline-block}
+/* ---- ranking ---- */
+.alog-rank-head{display:grid;grid-template-columns:54px 1fr 90px 110px;gap:10px;font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;padding:0 6px 8px}
+.alog-rank-row{display:grid;grid-template-columns:54px 1fr 90px 110px;gap:10px;align-items:center;padding:12px 6px;border-bottom:1px dashed #e8eef6}
+.alog-rank-pos{font-size:18px;font-weight:900;text-align:center}
+.alog-rank-nm{font-weight:800;color:#0f172a}
+.alog-rank-track{background:#eef2f7;border-radius:99px;height:10px;overflow:hidden;margin-top:6px}
+.alog-rank-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#0e7490,#22d3ee)}
+.alog-rank-ct{text-align:center;color:#64748b;font-weight:700}
+.alog-rank-pts{text-align:right;font-weight:900;color:#0e7490;font-size:17px}
+/* ---- daily points chart ---- */
+.alog-dbar-row{display:flex;gap:3px;align-items:flex-end;overflow-x:auto;padding:6px 0 2px}
+.alog-dbar-col{display:flex;flex-direction:column;align-items:center;min-width:20px;flex:1}
+.alog-dbar-wrap{height:124px;display:flex;align-items:flex-end}
+.alog-dbar{width:14px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#22d3ee,#0e7490)}
+.alog-dbar-lbl{font-size:9px;color:#94a3b8;margin-top:3px}
+.alog-dbar-val{font-size:9px;font-weight:800;color:#0e7490}
+@media(max-width:640px){.alog-rank-head,.alog-rank-row{grid-template-columns:40px 1fr 56px 68px}.alog-rank-pts{font-size:14px}}
+.opt-shared-badge{display:inline-block;background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
 </style>
 <script>
 var ALOG_KEY="optimumActivityLog";
@@ -10088,6 +10117,26 @@ body.opt-ov #appPage{display:none!important}
   window.optDelAgent=function(id){if(!confirm('Alisin ang agent na ito? Mabubura ang data nila.'))return;API.delAgent(id).then(function(){optRenderAgentsInSettings();try{renderAdminBar(ss.getItem('optAgentId')||'admin');}catch(e){}});};
   window.optRenderAgentsInSettings=optRenderAgentsInSettings;
   window.optGoMyWorkspace=function(){pushNow(function(){ss.setItem('optAgentId','admin');ss.removeItem('optHydratedFor');boot();});};
+  // ---- expose helpers for app-level features (sharing, ranking, role gating) ----
+  window.optUser=user;
+  window.optIsAdmin=function(){var u=user();return !!(u&&u.role==='admin');};
+  window.optCurrentAid=currentAid;
+  window.optAuthFetch=authFetch;
+  window.optSharedEvents=window.optSharedEvents||[];
+  // ---- admin agent-picker dropdown beside the upload icon ----
+  function renderAgentPicker(activeId){
+    var area=document.querySelector('.user-area');if(!area)return;
+    var sel=document.getElementById('optAgentPicker');
+    if(!sel){sel=document.createElement('select');sel.id='optAgentPicker';sel.title='Piliin ang agent account na titingnan';
+      var anchor=document.getElementById('optRestoreHdr');
+      if(anchor&&anchor.nextSibling){area.insertBefore(sel,anchor.nextSibling);}else{area.appendChild(sel);}
+      sel.onchange=function(){var id=sel.value;var cur=ss.getItem('optAgentId')||'admin';if(id===cur)return;pushNow(function(){ss.setItem('optAgentId',id);ss.removeItem('optHydratedFor');boot();});};
+    }
+    API.agents().then(function(r){if(!r.ok)return;var list=r.j.agents||[];var cur=activeId||ss.getItem('optAgentId')||'admin';
+      sel.innerHTML='<option value="admin">🏠 My Workspace (Admin)</option>'+list.map(function(a){return '<option value="'+a.id+'">👤 '+esc(a.name)+'</option>';}).join('');
+      sel.value=cur;});
+  }
+  function loadSharedEvents(){try{authFetch('/api/shared?type=events').then(function(r){if(r.ok){window.optSharedEvents=(r.j&&r.j.events)||[];if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}}}).catch(function(){});}catch(e){}}
 
   // ---------- admin bar atop app ----------
   function renderAdminBar(activeId){
@@ -10109,7 +10158,9 @@ body.opt-ov #appPage{display:none!important}
     try{document.getElementById('loginPage').classList.add('hidden');document.getElementById('appPage').classList.remove('hidden');}catch(e){}
     var u=user();
     try{var lu=document.getElementById('loggedUser');if(lu)lu.textContent=u?u.name:'';}catch(e){}
-    if(u&&u.role==='admin'){renderAdminBar(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
+    try{var bc=document.body.classList;bc.remove('opt-role-admin');bc.remove('opt-role-agent');bc.add(u&&u.role==='admin'?'opt-role-admin':'opt-role-agent');}catch(e){}
+    if(u&&u.role==='admin'){renderAdminBar(ss.getItem('optAgentId')||'admin');renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
+    loadSharedEvents();
     dirty=false;setSaveNote('');
   }
 
@@ -10134,6 +10185,118 @@ body.opt-ov #appPage{display:none!important}
   window.addEventListener('appinstalled',function(){_deferredPrompt=null;var b=document.getElementById('optInstallBtn');if(b)b.style.display='none';});
   if('serviceWorker' in navigator){try{navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister();});}).catch(function(){});}catch(e){} if(window.caches){try{caches.keys().then(function(ks){ks.forEach(function(k){caches.delete(k);});}).catch(function(){});}catch(e){}}}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
+</script>
+<script>
+/* ===== OPTIMUM add-on: shared calendar events + ranking + role gating ===== */
+(function(){
+  // --- merge shared events into calendar at render time (not persisted to agent's own store) ---
+  if(typeof window.getCalendar==='function' && !window._optCalWrapped){
+    window._optCalWrapped=true;
+    var _origGet=window.getCalendar, _origSet=window.setCalendar;
+    window.getCalendar=function(){
+      var own=[]; try{own=_origGet()||[];}catch(e){own=[];}
+      var ids={}; own.forEach(function(e){if(e&&e.id)ids[e.id]=1;});
+      var sh=(window.optSharedEvents||[]).filter(function(e){return e&&!ids[e.id];}).map(function(e){var c={};for(var k in e)c[k]=e[k];c._shared=true;return c;});
+      return own.concat(sh);
+    };
+    window.setCalendar=function(a){var ownOnly=(a||[]).filter(function(e){return !(e&&e._shared);});return _origSet(ownOnly);};
+  }
+
+  // --- share a calendar event to all agents (admin) ---
+  window.optShareEventFromModal=function(id){
+    if(!(window.optIsAdmin&&window.optIsAdmin())){alert('Admin lang ang pwedeng mag-share.');return;}
+    var g=function(i){var el=document.getElementById(i);return el?el.value:'';};
+    var title=(g('mTitle')||'').trim(), date=g('mDate');
+    if(!title||!date){alert('Title at Date muna bago i-share.');return;}
+    var ev={id:id||((window.crypto&&crypto.randomUUID)?crypto.randomUUID():'ev'+Date.now()),date:date,type:g('mType'),start:g('mStart'),end:g('mEnd'),title:title,person:(g('mPerson')||'').trim(),host:(g('mPerson')||'').trim(),zoom:(g('mZoom')||'').trim(),location:(g('mLocation')||'').trim(),notes:(g('mNotes')||'').trim(),color:g('mColor')};
+    // save to admin's own calendar too
+    try{var own=JSON.parse(localStorage.getItem('optimum_calendar_v1'))||[];var oi=own.findIndex(function(z){return z.id===ev.id;});if(oi>=0)own[oi]=ev;else own.push(ev);localStorage.setItem('optimum_calendar_v1',JSON.stringify(own));}catch(e){}
+    var sh=(window.optSharedEvents||[]).slice();var si=sh.findIndex(function(z){return z.id===ev.id;});if(si>=0)sh[si]=ev;else sh.push(ev);
+    window.optAuthFetch('/api/shared?type=events',{method:'POST',body:JSON.stringify({type:'events',events:sh})}).then(function(r){
+      if(r.ok){window.optSharedEvents=sh;if(typeof closeModal==='function')closeModal();if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}alert('Na-share na sa lahat ng agents ✓');}
+      else alert('Share failed: '+((r.j&&r.j.error)||'error'));
+    }).catch(function(e){alert('Share failed: '+e.message);});
+  };
+  // share an existing event straight from the activity list (admin)
+  window.optShareEventById=function(id){
+    if(!(window.optIsAdmin&&window.optIsAdmin())){alert('Admin lang ang pwedeng mag-share.');return;}
+    var all=(typeof getCalendar==='function'?getCalendar():[]);
+    var x=(all||[]).filter(function(z){return z.id===id;})[0];
+    if(!x){alert('Activity not found.');return;}
+    var ev={};for(var k in x)ev[k]=x[k];delete ev._shared;
+    var sh=(window.optSharedEvents||[]).slice();var si=sh.findIndex(function(z){return z.id===ev.id;});if(si>=0)sh[si]=ev;else sh.push(ev);
+    window.optAuthFetch('/api/shared?type=events',{method:'POST',body:JSON.stringify({type:'events',events:sh})}).then(function(r){
+      if(r.ok){window.optSharedEvents=sh;if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}alert('Na-share na sa lahat ng agents ✓');}
+      else alert('Share failed: '+((r.j&&r.j.error)||'error'));
+    }).catch(function(e){alert('Share failed: '+e.message);});
+  };
+  // unshare (admin) - remove from shared store
+  window.optUnshareEvent=function(id){
+    if(!(window.optIsAdmin&&window.optIsAdmin()))return;
+    var sh=(window.optSharedEvents||[]).filter(function(z){return z.id!==id;});
+    window.optAuthFetch('/api/shared?type=events',{method:'POST',body:JSON.stringify({type:'events',events:sh})}).then(function(r){
+      if(r.ok){window.optSharedEvents=sh;if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}alert('Inalis sa shared.');}
+    });
+  };
+
+  // --- Ranking ---
+  window.alogRenderRanking=function(){
+    var box=document.getElementById('alogRankList');if(!box)return;
+    var mv=(document.getElementById('alogRankMonth')||{}).value||'';
+    box.innerHTML='<p style="color:#888">Kinukuha ang ranking...</p>';
+    if(!window.optAuthFetch){box.innerHTML='<p style="color:#dc2626">Hindi available ang ranking (hindi naka-login sa cloud).</p>';return;}
+    window.optAuthFetch('/api/shared?type=ranking'+(mv?('&month='+encodeURIComponent(mv)):'')).then(function(r){
+      if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+((r.j&&r.j.error)||'Error')+'</p>';return;}
+      var list=(r.j&&r.j.ranking)||[];
+      list=list.filter(function(x){return x.role!=='admin'||x.totalPts>0;});
+      if(!list.length){box.innerHTML='<p style="color:#888">Wala pang naka-encode na activity.</p>';return;}
+      var max=Math.max.apply(null,list.map(function(x){return x.totalPts;}))||1;
+      var medals=['🥇','🥈','🥉'];
+      box.innerHTML='<div class="alog-rank-head"><span>#</span><span>Agent</span><span>Activities</span><span>Total Points</span></div>'+list.map(function(x,i){
+        var w=Math.max(4,Math.round(x.totalPts/max*100));
+        var rk=i<3?medals[i]:('#'+(i+1));
+        return '<div class="alog-rank-row"><span class="alog-rank-pos">'+rk+'</span>'
+          +'<span class="alog-rank-nm">'+String(x.name||'').replace(/</g,'&lt;')+(x.role==='admin'?' <b style="color:#0e7490">(Admin)</b>':'')+'<div class="alog-rank-track"><div class="alog-rank-fill" style="width:'+w+'%"></div></div></span>'
+          +'<span class="alog-rank-ct">'+x.count+'</span>'
+          +'<span class="alog-rank-pts">'+x.totalPts+'</span></div>';
+      }).join('');
+    }).catch(function(e){box.innerHTML='<p style="color:#dc2626">'+e.message+'</p>';});
+  };
+
+  // --- daily points bar graph appended to the activity report ---
+  window.alogRenderDailyChart=function(){
+    var host=document.getElementById('alogDailyChart');if(!host)return;
+    var mv=(document.getElementById('alogReportMonth')||{}).value||new Date().toISOString().slice(0,7);
+    var arr=[];try{arr=JSON.parse(localStorage.getItem('optimumActivityLog')||'[]');}catch(e){arr=[];}
+    arr=arr.filter(function(e){return String(e.date||'').slice(0,7)===mv;});
+    var parts=mv.split('-');var y=+parts[0],m=+parts[1];var days=new Date(y,m,0).getDate();
+    var daily=[];for(var i=1;i<=days;i++)daily.push(0);
+    arr.forEach(function(e){var d=+String(e.date).slice(8,10);if(d>=1&&d<=days)daily[d-1]+=Number(e.pts)||0;});
+    var max=Math.max.apply(null,daily)||1;
+    var bars=daily.map(function(v,i){var h=Math.max(2,Math.round(v/max*120));var d=i+1;
+      return '<div class="alog-dbar-col" title="Day '+d+': '+v+' pts"><div class="alog-dbar-wrap"><div class="alog-dbar" style="height:'+h+'px"></div></div><div class="alog-dbar-lbl">'+d+'</div>'+(v>0?'<div class="alog-dbar-val">'+v+'</div>':'')+'</div>';
+    }).join('');
+    host.innerHTML='<h3 style="margin:0 0 12px">Daily Points — '+mv+'</h3><div class="alog-dbar-row">'+bars+'</div>';
+  };
+
+  // hook daily chart into the report render + tab switch
+  var _origReport=window.alogRenderReport;
+  if(typeof _origReport==='function'){
+    window.alogRenderReport=function(){try{_origReport.apply(this,arguments);}catch(e){}try{window.alogRenderDailyChart();}catch(e){}};
+  }
+  var _origTab=window.alogShowTab;
+  if(typeof _origTab==='function'){
+    window.alogShowTab=function(which,btn){
+      var ts=document.querySelectorAll('.alog-tab');for(var i=0;i<ts.length;i++)ts[i].classList.remove('active');if(btn)btn.classList.add('active');
+      var lv=document.getElementById('alogLogView'),rv=document.getElementById('alogReportView'),kv=document.getElementById('alogRankView');
+      if(lv)lv.style.display=(which==='log')?'':'none';
+      if(rv)rv.style.display=(which==='report')?'':'none';
+      if(kv)kv.style.display=(which==='rank')?'':'none';
+      if(which==='report'){try{window.alogRenderReport();}catch(e){}}
+      if(which==='rank'){var mm=document.getElementById('alogRankMonth');if(mm&&!mm.value)mm.value=new Date().toISOString().slice(0,7);try{window.alogRenderRanking();}catch(e){}}
+    };
+  }
 })();
 </script>
 </body>

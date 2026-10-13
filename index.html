@@ -203,7 +203,7 @@ input[type="color"]{padding:4px}
     </div>
     <div class="user-area">
       <span id="loggedUser">70117295</span>
-      <button class="logout" onclick="optimumSaveBackup()" title="Download Backup" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button><button class="logout" onclick="document.getElementById('optRestoreHdr').click()" title="Upload / Restore Backup" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-left:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button><input id="optRestoreHdr" type="file" accept="application/json,.json" style="display:none" onchange="optimumRestoreBackup(this)"><button class="logout" onclick="logout()" title="Switch account / Log out" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-left:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
+      <button class="logout" onclick="optimumSaveBackup()" title="Download Backup" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button><button class="logout" onclick="document.getElementById('optRestoreHdr').click()" title="Upload / Restore Backup" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-left:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button><input id="optRestoreHdr" type="file" accept="application/json,.json" style="display:none" onchange="optimumRestoreBackup(this)"><button class="logout" onclick="optSyncNow&&optSyncNow()" title="Sync now (i-save at kunin ang pinakabago)" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-left:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button><button class="logout" onclick="logout()" title="Switch account / Log out" style="padding:8px 10px;display:inline-flex;align-items:center;justify-content:center;line-height:0;margin-left:6px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg></button>
     </div>
   </header>
 
@@ -9839,9 +9839,29 @@ body.opt-role-agent [data-page="customize"]{display:none!important}
 body.opt-role-agent #alogAddTypeCard{display:none!important}
 body.opt-role-agent #alogTypeList .alog-tactions{display:none!important}
 body:not(.opt-role-admin) .opt-admin-only{display:none!important}
-/* ---- admin agent picker ---- */
-#optAgentPicker{display:none;margin-left:8px;padding:7px 10px;border:1px solid #cbd5e1;border-radius:9px;font-weight:700;color:#0f172a;background:#fff;max-width:210px;cursor:pointer}
+/* ---- admin agent picker (sits at the name position; replaces the plain name for admin) ---- */
+#optAgentPicker{display:none;margin-right:6px;padding:8px 12px;border:1px solid #cbd5e1;border-radius:9px;font-weight:800;color:#0f172a;background:#fff;max-width:230px;cursor:pointer}
 body.opt-role-admin #optAgentPicker{display:inline-block}
+body.opt-role-admin #loggedUser{display:none}
+/* ---- removed legacy black admin bar ---- */
+#optAdminBar{display:none!important}
+/* ---- phone / responsive header ---- */
+@media(max-width:620px){
+  .topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:10px 12px!important}
+  .user-area{flex-wrap:wrap;gap:7px;justify-content:flex-end}
+  .top-name{font-size:18px}.top-subtitle{font-size:10px}
+  #optAgentPicker{max-width:46vw;padding:7px 9px}
+  #loggedUser{font-size:12px;max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .user-area .logout{padding:7px 9px}
+  .content{padding:14px}
+  .page-title{font-size:21px}.page-sub{margin-bottom:16px}
+  .calendar-grid{grid-template-columns:repeat(7,minmax(90px,1fr));min-width:640px}
+  .calendar-lower{grid-template-columns:1fr}
+  .alog-addtype{grid-template-columns:1fr}
+  .alog-trow,.alog-thead{grid-template-columns:1fr 54px 64px 60px;gap:6px}
+  .alog-tabs{overflow-x:auto}
+  .alog-tab{padding:9px 13px;white-space:nowrap}
+}
 /* ---- ranking ---- */
 .alog-rank-head{display:grid;grid-template-columns:54px 1fr 90px 110px;gap:10px;font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;padding:0 6px 8px}
 .alog-rank-row{display:grid;grid-template-columns:54px 1fr 90px 110px;gap:10px;align-items:center;padding:12px 6px;border-bottom:1px dashed #e8eef6}
@@ -10058,8 +10078,15 @@ body.opt-ov #appPage{display:none!important}
     API.saveData(aid,snapshot()).then(function(){dirty=false;saving=false;setSaveNote('Saved ✓');cb&&cb();})
     .catch(function(){saving=false;setSaveNote('Save failed');cb&&cb();});}
   function setSaveNote(t){var el=document.getElementById('optSaveNote');if(el)el.textContent=t;}
-  setInterval(function(){if(dirty&&!saving&&currentAid())pushNow();},12000);
-  window.addEventListener('beforeunload',function(){var aid=currentAid();if(dirty&&aid&&tok()){try{fetch('/api/data',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify({agentId:aid,keys:snapshot()})});}catch(e){}}});
+  setInterval(function(){if(dirty&&!saving&&currentAid())pushNow();},7000);
+  window.addEventListener('beforeunload',function(){pushNowSafe();});
+  // mobile browsers often skip 'beforeunload' — flush on pagehide and when tab/app is backgrounded
+  window.addEventListener('pagehide',function(){pushNowSafe();});
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')pushNowSafe();});
+  // manual force-sync: save to cloud, then pull the latest and reload
+  window.optSyncNow=function(){var aid=currentAid();if(!aid||!tok()){alert('Hindi naka-login.');return;}setSaveNote('Syncing…');
+    API.saveData(aid,snapshot()).then(function(){dirty=false;ss.removeItem('optHydratedFor');hydrate(aid);})
+    .catch(function(){setSaveNote('Sync failed');alert('Sync failed — check internet.');});};
 
   // ---------- logout ----------
   function doLogout(){pushNowSafe();['optToken','optUser','optAgentId','optHydratedFor','optimum_logged_in'].forEach(function(k){ss.removeItem(k);});location.reload();}
@@ -10107,14 +10134,14 @@ body.opt-ov #appPage{display:none!important}
     var username=prompt('Username (para sa login):');if(!username)return;
     var password=prompt('Password:');if(!password)return;
     API.addAgent({name:name,username:username,password:password}).then(function(r){
-      if(!r.ok){alert(r.j.error||'Failed');return;}alert('Agent added: '+name);if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();try{renderAdminBar(ss.getItem('optAgentId')||'admin');}catch(e){}
+      if(!r.ok){alert(r.j.error||'Failed');return;}alert('Agent added: '+name);if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();try{renderAgentPicker(ss.getItem('optAgentId')||'admin');}catch(e){}
     });
   }
   function openAgent(aid){ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();}
   function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}var list=r.j.agents||[];var cur=ss.getItem('optAgentId')||'admin';var head='<div class="optam-row optam-head"><span>Agent</span><span>Username</span><span>Actions</span></div>';var rows=list.length?list.map(function(a){return '<div class="optam-row"><span class="optam-nm">'+esc(a.name)+(a.id===cur?' <b style=\"color:#16a34a\">(viewing)</b>':'')+'</span><span class="optam-u">@'+esc(a.username)+'</span><span class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></span></div>';}).join(''):'<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';box.innerHTML=head+rows;});}
   window.optAddAgent=addAgentFlow;
   window.optOpenAgent=openAgent;
-  window.optDelAgent=function(id){if(!confirm('Alisin ang agent na ito? Mabubura ang data nila.'))return;API.delAgent(id).then(function(){optRenderAgentsInSettings();try{renderAdminBar(ss.getItem('optAgentId')||'admin');}catch(e){}});};
+  window.optDelAgent=function(id){if(!confirm('Alisin ang agent na ito? Mabubura ang data nila.'))return;API.delAgent(id).then(function(){optRenderAgentsInSettings();try{renderAgentPicker(ss.getItem('optAgentId')||'admin');}catch(e){}});};
   window.optRenderAgentsInSettings=optRenderAgentsInSettings;
   window.optGoMyWorkspace=function(){pushNow(function(){ss.setItem('optAgentId','admin');ss.removeItem('optHydratedFor');boot();});};
   // ---- expose helpers for app-level features (sharing, ranking, role gating) ----
@@ -10127,13 +10154,12 @@ body.opt-ov #appPage{display:none!important}
   function renderAgentPicker(activeId){
     var area=document.querySelector('.user-area');if(!area)return;
     var sel=document.getElementById('optAgentPicker');
-    if(!sel){sel=document.createElement('select');sel.id='optAgentPicker';sel.title='Piliin ang agent account na titingnan';
-      var anchor=document.getElementById('optRestoreHdr');
-      if(anchor&&anchor.nextSibling){area.insertBefore(sel,anchor.nextSibling);}else{area.appendChild(sel);}
+    if(!sel){sel=document.createElement('select');sel.id='optAgentPicker';sel.title='Piliin ang account na titingnan';
+      area.insertBefore(sel,area.firstChild); // sits at the name position, before the download icon
       sel.onchange=function(){var id=sel.value;var cur=ss.getItem('optAgentId')||'admin';if(id===cur)return;pushNow(function(){ss.setItem('optAgentId',id);ss.removeItem('optHydratedFor');boot();});};
     }
     API.agents().then(function(r){if(!r.ok)return;var list=r.j.agents||[];var cur=activeId||ss.getItem('optAgentId')||'admin';
-      sel.innerHTML='<option value="admin">🏠 My Workspace (Admin)</option>'+list.map(function(a){return '<option value="'+a.id+'">👤 '+esc(a.name)+'</option>';}).join('');
+      sel.innerHTML='<option value="admin">🏠 '+esc((user()||{}).name||'Admin')+' (Admin)</option>'+list.map(function(a){return '<option value="'+a.id+'">👤 '+esc(a.name)+'</option>';}).join('');
       sel.value=cur;});
   }
   function loadSharedEvents(){try{authFetch('/api/shared?type=events').then(function(r){if(r.ok){window.optSharedEvents=(r.j&&r.j.events)||[];if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}}}).catch(function(){});}catch(e){}}
@@ -10159,7 +10185,8 @@ body.opt-ov #appPage{display:none!important}
     var u=user();
     try{var lu=document.getElementById('loggedUser');if(lu)lu.textContent=u?u.name:'';}catch(e){}
     try{var bc=document.body.classList;bc.remove('opt-role-admin');bc.remove('opt-role-agent');bc.add(u&&u.role==='admin'?'opt-role-admin':'opt-role-agent');}catch(e){}
-    if(u&&u.role==='admin'){renderAdminBar(ss.getItem('optAgentId')||'admin');renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
+    try{var _ab=document.getElementById('optAdminBar');if(_ab)_ab.parentNode.removeChild(_ab);}catch(e){}
+    if(u&&u.role==='admin'){renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
     loadSharedEvents();
     dirty=false;setSaveNote('');
   }

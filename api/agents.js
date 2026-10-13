@@ -6,16 +6,18 @@ module.exports = async (req, res) => {
   try {
     let users = (await getUsers()) || [];
     if (req.method === 'GET') {
-      const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, createdAt: u.createdAt }));
+      const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, createdAt: u.createdAt, status: u.status || '', dateCoded: u.dateCoded || '', licVariable: !!u.licVariable, licLife: !!u.licLife }));
       return send(res, 200, { agents: list });
     }
     if (req.method === 'POST') {
-      const { name, username, password } = await readBody(req);
+      const b = await readBody(req);
+      const { name, username, password, status, dateCoded, licVariable, licLife } = b;
       if (!name || !username || !password) return send(res, 400, { error: 'name, username, password kailangan' });
       if (users.some(u => String(u.username).toLowerCase() === String(username).toLowerCase()))
         return send(res, 409, { error: 'May ganitong username na' });
       const id = 'ag_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-      users.push({ id, name, username, role: 'agent', pass: hashPassword(password), createdAt: new Date().toISOString() });
+      users.push({ id, name, username, role: 'agent', pass: hashPassword(password), createdAt: new Date().toISOString(),
+        status: status || '', dateCoded: dateCoded || '', licVariable: !!licVariable, licLife: !!licLife });
       await saveUsers(users);
       await kvSet(dataKey(id), JSON.stringify({ keys: {} }));
       return send(res, 200, { ok: true, agent: { id, name, username } });
@@ -35,6 +37,10 @@ module.exports = async (req, res) => {
       if (b.name) u.name = b.name;
       if (b.username) u.username = b.username;
       if (b.password) u.pass = hashPassword(b.password);
+      if (b.status !== undefined) u.status = b.status || '';
+      if (b.dateCoded !== undefined) u.dateCoded = b.dateCoded || '';
+      if (b.licVariable !== undefined) u.licVariable = !!b.licVariable;
+      if (b.licLife !== undefined) u.licLife = !!b.licLife;
       await saveUsers(users);
       return send(res, 200, { ok: true });
     }

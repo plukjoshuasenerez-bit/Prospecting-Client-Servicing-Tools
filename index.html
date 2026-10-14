@@ -198,6 +198,7 @@ input[type="color"]{padding:4px}
 
 <section id="appPage" class="hidden">
   <header class="topbar">
+    <button id="optMenuBtn" class="opt-menu-btn" onclick="optToggleDrawer()" aria-label="Menu" title="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <div class="top-brand">
       <div class="top-mark" id="topMark">O</div>
       <div class="top-brand-text"><div class="top-name" id="topName">OPTIMUM</div><div class="top-subtitle" id="topSubtitle">Prospect and Client Servicing</div></div>
@@ -219,6 +220,7 @@ input[type="color"]{padding:4px}
       <button class="nav-btn" data-page="clientref" onclick="showClientRef('clients',this)">📋 <span class="nav-label">Client &amp; Refresher</span></button>
       <button class="nav-btn opt-settings-nav" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
     </aside>
+    <div id="optDrawerBackdrop" class="opt-drawer-backdrop" onclick="optToggleDrawer(false)"></div>
 
     <main class="content">
       <section id="home" class="app-section">
@@ -10162,6 +10164,22 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
   #optAgentPicker{max-width:38vw}
   .page-title{font-size:19px!important}
 }
+/* ===== Mobile sidebar DRAWER (hidden by default, ☰ to open) ===== */
+.opt-menu-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);background:#fff;border-radius:11px;cursor:pointer;color:#0f172a;flex:0 0 auto;margin-right:6px;padding:0}
+.opt-drawer-backdrop{display:none}
+@media(max-width:760px){
+  .opt-menu-btn{display:inline-flex}
+  .topbar{display:flex;align-items:center;flex-wrap:wrap}
+  .layout{display:block}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;width:244px!important;height:100vh;z-index:10060;transform:translateX(-100%);transition:transform .25s ease;box-shadow:12px 0 40px rgba(0,0,0,.3);overflow-y:auto;padding:16px 12px!important;display:flex!important;flex-direction:column}
+  .sidebar .side-title{display:block!important;margin-bottom:6px}
+  .sidebar .nav-btn{text-align:left!important;font-size:15px!important;padding:12px 14px!important}
+  .sidebar .nav-label{display:inline!important}
+  .opt-settings-nav{margin-top:auto}
+  body.opt-drawer-open .sidebar{transform:translateX(0)}
+  body.opt-drawer-open .opt-drawer-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:10055}
+  .content{padding:14px;max-width:100%}
+}
 </style>
 <script>
 var ALOG_KEY="optimumActivityLog";
@@ -10924,6 +10942,9 @@ body.opt-ov #appPage{display:none!important}
     if(f==='Policy Review'){try{return optRenderPolicyReview();}catch(e){}}
     if(typeof _origRAL==='function')return _origRAL.apply(this,arguments);
   };
+  // ===== Mobile sidebar drawer =====
+  window.optToggleDrawer=function(force){var b=document.body;var open=(force===undefined)?!b.classList.contains('opt-drawer-open'):!!force;if(open)b.classList.add('opt-drawer-open');else b.classList.remove('opt-drawer-open');};
+  document.addEventListener('click',function(e){try{var t=e.target;if(t&&t.closest&&t.closest('.sidebar .nav-btn')){document.body.classList.remove('opt-drawer-open');}}catch(err){}});
   // ===== Calendar view toggle =====
   window.calSetView=function(v){
     var g=document.getElementById('calGridView'),l=document.getElementById('calListView'),cb=document.getElementById('calViewCalBtn'),lb=document.getElementById('calViewListBtn');

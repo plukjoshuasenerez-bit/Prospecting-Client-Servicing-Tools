@@ -414,7 +414,7 @@ input[type="color"]{padding:4px}
             <div class="note">Saved locally in this browser.</div>
           </div>
 
-          <div class="setting-card">
+          <div class="setting-card" style="display:none">
             <h3>Color Way</h3>
             <label>Primary Color</label>
             <input id="primaryColor" type="color" value="#00AFC7">
@@ -10005,7 +10005,7 @@ body.opt-user-admin #loggedUser{display:none}
 .alog-dbar-val{font-size:9px;font-weight:800;color:#0e7490}
 @media(max-width:640px){.alog-rank-head,.alog-rank-row{grid-template-columns:40px 1fr 56px 68px}.alog-rank-pts{font-size:14px}}
 .opt-shared-badge{display:inline-block;background:#f3e8ff;color:#7c3aed;font-size:10px;font-weight:800;padding:1px 7px;border-radius:99px;margin-left:4px;vertical-align:middle}
-.opt-savenote{font-size:11px;font-weight:800;color:#94a3b8;min-width:0;white-space:nowrap}
+.opt-savenote{display:inline-flex;align-items:center;min-width:0;white-space:nowrap}
 /* ---- activity editor line-icon buttons + google-calendar checkbox ---- */
 .act-icon{width:46px;height:46px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;padding:0}
 .act-icon svg{width:20px;height:20px}
@@ -10482,7 +10482,7 @@ body.opt-ov #appPage{display:none!important}
   function pushNow(cb){if(document.body.classList.contains('opt-ro')){cb&&cb();return;}var aid=currentAid();if(!aid||!tok()){cb&&cb();return;}saving=true;setSaveNote('Saving…');var snap=snapshot();
     API.saveData(aid,snap).then(function(){dirty=false;saving=false;setSaveNote('Saved ✓');try{ss.setItem('optLoadedCanon',optCanon(snap));}catch(e){}cb&&cb();})
     .catch(function(){saving=false;setSaveNote('Save failed');cb&&cb();});}
-  function setSaveNote(t){var el=document.getElementById('optSaveNote');if(el){el.textContent=t;var ok=/Saved/.test(t),bad=/fail/i.test(t);el.style.color=bad?'#dc2626':(ok?'#16a34a':'#94a3b8');}}
+  function setSaveNote(t){var el=document.getElementById('optSaveNote');if(!el)return;if(!t){el.innerHTML='';el.title='';return;}var bad=/fail/i.test(t),saving=/Saving|Syncing|Updating/i.test(t);var col=bad?'#dc2626':(saving?'#f59e0b':'#16a34a');el.title=t;el.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';}
   setInterval(function(){if(dirty&&!saving&&currentAid())pushNow();},7000);
   window.addEventListener('beforeunload',function(){pushNowSafe();});
   // mobile browsers often skip 'beforeunload' — flush on pagehide and when tab/app is backgrounded

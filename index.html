@@ -10656,6 +10656,7 @@ body.opt-ov #appPage{display:none!important}
       window.optSharedEvents=evs.map(function(e){
         if(e&&e.type==='Training'){var c={};for(var k in e)c[k]=e[k];var rf=String(c.reqFor||'all').toLowerCase();
           var tags=rf.split(',').map(function(t){return t.trim();}).filter(Boolean);
+          var recTags=String(c.recFor||'').toLowerCase().split(',').map(function(t){return t.trim();}).filter(Boolean);
           var isOpt=(tags.indexOf('optional')>=0||tags.indexOf('recommended')>=0||tags.length===0);
           var mRookie=tags.indexOf('rookie')>=0&&isRookie;
           var mStatus=tags.indexOf('all')>=0||(!!st&&tags.indexOf(st)>=0);
@@ -10807,36 +10808,40 @@ body.opt-ov #appPage{display:none!important}
     m.innerHTML='<div class="optaa-box" style="max-width:420px">'+
       '<div class="optaa-head"><h2>📢 Share to all agents</h2><button class="optaa-x" id="osdX">×</button></div>'+
       '<div style="font-weight:700;color:#475569;margin-bottom:6px">'+esc((x.title||'Activity))').replace(/\)+$/,''))+'</div>'+
-      '<div style="color:#64748b;font-size:13px;margin-bottom:12px">Required for (lagyan ng check):</div>'+
+      '<div style="color:#475569;font-size:13px;margin:4px 0 6px;font-weight:800">🔴 Required for:</div>'+
       '<div class="optaa-checks" style="height:auto"><label class="optaa-chk"><input type="checkbox" id="osdFT"> <b>FT</b> — Full Time</label><label class="optaa-chk"><input type="checkbox" id="osdPT"> <b>PT</b> — Part Time</label><label class="optaa-chk" style="border-color:#f59e0b;background:#fff7ed"><input type="checkbox" id="osdRK"> <b style="color:#d97706">Rookie</b> — ≤12 months</label></div>'+
-      '<div style="color:#94a3b8;font-size:11px;margin-top:6px">Default: walang check = Optional. I-check kung required (pwede sabay-sabay).</div>'+
-      '<div class="optaa-actions" style="flex-wrap:wrap;gap:8px"><button class="optaa-cancel" id="osdCancel">Cancel</button><button class="optaa-save" id="osdRec" style="background:#f59e0b">⭐ Recommended</button><button class="optaa-save" id="osdShare">📢 Share</button></div>'+
+      '<div style="color:#475569;font-size:13px;margin:14px 0 6px;font-weight:800">⭐ Recommended for:</div>'+
+      '<div class="optaa-checks" style="height:auto"><label class="optaa-chk" style="border-color:#f5c542;background:#fffbeb"><input type="checkbox" id="osdRecFT"> <b style="color:#b7791f">FT</b> — Full Time</label><label class="optaa-chk" style="border-color:#f5c542;background:#fffbeb"><input type="checkbox" id="osdRecPT"> <b style="color:#b7791f">PT</b> — Part Time</label></div>'+
+      '<div style="color:#94a3b8;font-size:11px;margin-top:8px">Walang check = Optional. Required = 🔴red / 🟠orange (Rookie); Recommended = 🟡gold.</div>'+
+      '<div class="optaa-actions" style="flex-wrap:wrap;gap:8px"><button class="optaa-cancel" id="osdCancel">Cancel</button><button class="optaa-save" id="osdShare">📢 Share</button></div>'+
     '</div>';
     document.body.appendChild(m);
     var close=function(){try{m.parentNode.removeChild(m);}catch(e){}};
     document.getElementById('osdX').onclick=close;document.getElementById('osdCancel').onclick=close;m.addEventListener('click',function(e){if(e.target===m)close();});
-    var doShare=function(reqFor){
+    var doShare=function(reqFor,recFor){
       try{var own=JSON.parse(localStorage.getItem('optimum_calendar_v1'))||[];var ix=own.findIndex(function(z){return z.id===id;});
-        if(ix>=0){own[ix].reqFor=reqFor;localStorage.setItem('optimum_calendar_v1',JSON.stringify(own));}
+        if(ix>=0){own[ix].reqFor=reqFor;own[ix].recFor=recFor||'';localStorage.setItem('optimum_calendar_v1',JSON.stringify(own));}
       }catch(e){}
       close();
-      try{window.optShareEventById(id,reqFor);}catch(e){}
+      try{window.optShareEventById(id,reqFor,recFor||'');}catch(e){}
     };
     document.getElementById('osdShare').onclick=function(){
       var ft=document.getElementById('osdFT').checked,pt=document.getElementById('osdPT').checked,rk=document.getElementById('osdRK').checked;
-      var tags=[];if(ft)tags.push('fulltime');if(pt)tags.push('parttime');if(rk)tags.push('rookie');
-      doShare(tags.length?tags.join(','):'optional');
+      var rft=document.getElementById('osdRecFT').checked,rpt=document.getElementById('osdRecPT').checked;
+      var req=[];if(ft)req.push('fulltime');if(pt)req.push('parttime');if(rk)req.push('rookie');
+      var rec=[];if(rft)rec.push('fulltime');if(rpt)rec.push('parttime');
+      doShare(req.length?req.join(','):'optional', rec.join(','));
     };
-    document.getElementById('osdRec').onclick=function(){ doShare('recommended'); };
   };
   // share an existing event straight from the activity list (admin)
-  window.optShareEventById=function(id,reqForOverride){
+  window.optShareEventById=function(id,reqForOverride,recForOverride){
     if(!(window.optIsAdmin&&window.optIsAdmin())){alert('Admin lang ang pwedeng mag-share.');return;}
     var all=(typeof getCalendar==='function'?getCalendar():[]);
     var x=(all||[]).filter(function(z){return z.id===id;})[0];
     if(!x){alert('Activity not found.');return;}
     var ev={};for(var k in x)ev[k]=x[k];delete ev._shared;delete ev._bday;
     if(reqForOverride){ev.reqFor=reqForOverride;if(ev.type!=='Training')ev.type='Training';}
+    if(recForOverride!==undefined){ev.recFor=recForOverride;if(ev.type!=='Training')ev.type='Training';}
     var sh=(window.optSharedEvents||[]).slice();var si=sh.findIndex(function(z){return z.id===ev.id;});if(si>=0)sh[si]=ev;else sh.push(ev);
     window.optAuthFetch('/api/shared?type=events',{method:'POST',body:JSON.stringify({type:'events',events:sh})}).then(function(r){
       if(r.ok){window.optSharedEvents=sh;if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}alert('Na-share na sa lahat ng agents ✓');}
@@ -11014,6 +11019,8 @@ body.opt-ov #appPage{display:none!important}
     else if(rf==='recommended'){reqLabel='⭐ Recommended';}
     else if(_tg.indexOf('rookie')>=0){reqLabel='🟠 Required — '+_tg.map(function(t){return _nm[t]||t;}).join(', ');}
     else{reqLabel='🔴 Required — '+_tg.map(function(t){return _nm[t]||t;}).join(', ');}
+    var _rc=String(x.recFor||'').toLowerCase().split(',').map(function(t){return t.trim();}).filter(Boolean);
+    if(_rc.length){reqLabel+=' &nbsp;·&nbsp; ⭐ Recommended — '+_rc.map(function(t){return _nm[t]||t;}).join(', ');}
     var E=(typeof esc==='function')?esc:function(s){return s;};var FT=(typeof formatTime==='function')?formatTime:function(a,b){return (a||'')+(b?('-'+b):'');};
     if(typeof modal!=='function')return;
     modal('<div class="activity-head"><h2>🎓 '+E(x.title||'Training')+'</h2><button class="activity-close" onclick="closeModal()">×</button></div>'+

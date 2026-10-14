@@ -19,6 +19,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>OPTIMUM — Prospect and Client Servicing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@400;600;800&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --primary:#00AFC7;
@@ -29,9 +31,13 @@
   --text:#18202b;
   --muted:#6f7885;
   --border:#e3e7ed;
+  --sidebar-bg:#ffffff;
+  --sidebar-fg:#334155;
+  --sidebar-active:#f1f5f9;
+  --app-font:Arial,Helvetica,sans-serif;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+body{margin:0;font-family:var(--app-font,Arial,Helvetica,sans-serif);background:var(--bg);color:var(--text)}
 button,input{font:inherit}
 .hidden{display:none!important}
 
@@ -104,11 +110,11 @@ button,input{font:inherit}
 .user-area{display:flex;align-items:center;gap:12px}
 .logout{border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 14px;cursor:pointer}
 .layout{display:flex;min-height:calc(100vh - 70px)}
-.sidebar{width:198px;background:#fff;color:#0f172a;padding:16px 10px;display:flex;flex-direction:column;border-right:1px solid #e5e9f0}
+.sidebar{width:198px;background:var(--sidebar-bg);color:var(--sidebar-fg);padding:16px 10px;display:flex;flex-direction:column;border-right:1px solid #e5e9f0;position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto;align-self:flex-start}
 .opt-settings-nav{margin-top:auto}
 .side-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;padding:8px 12px}
-.nav-btn{width:100%;border:0;background:transparent;color:#334155;text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer;margin:2px 0;font-size:14px;font-weight:600;touch-action:none;user-select:none;-webkit-user-select:none}.nav-btn.long-press-ready{cursor:grab}.nav-btn.dragging{opacity:.65;cursor:grabbing;background:rgba(0,0,0,.06);box-shadow:0 8px 20px rgba(0,0,0,.14);position:relative;z-index:5}.nav-btn.drag-over{outline:2px dashed rgba(0,0,0,.2);outline-offset:2px}
-.nav-btn.active,.nav-btn:hover{background:#f1f5f9;color:#0f172a}
+.nav-btn{width:100%;border:0;background:transparent;color:var(--sidebar-fg);text-align:left;padding:11px 12px;border-radius:10px;cursor:pointer;margin:2px 0;font-size:14px;font-weight:600;touch-action:none;user-select:none;-webkit-user-select:none}.nav-btn.long-press-ready{cursor:grab}.nav-btn.dragging{opacity:.65;cursor:grabbing;background:rgba(0,0,0,.06);box-shadow:0 8px 20px rgba(0,0,0,.14);position:relative;z-index:5}.nav-btn.drag-over{outline:2px dashed rgba(0,0,0,.2);outline-offset:2px}
+.nav-btn.active,.nav-btn:hover{background:var(--sidebar-active)}
 .nav-btn.active{color:var(--primary)}
 .content{flex:1;padding:26px;max-width:1400px}
 .page-title{font-size:28px;margin:0 0 5px}
@@ -213,7 +219,7 @@ input[type="color"]{padding:4px}
 
   <div class="layout">
     <aside class="sidebar">
-      <div class="side-title" id="sideTitle">OPTIMUM</div>
+      <div class="side-title" id="sideTitle" style="display:none">OPTIMUM</div>
       <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this);try{window.optLoadAgentBirthdays&&window.optLoadAgentBirthdays();}catch(e){}">📅 <span class="nav-label">Calendar</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)">🎯 <span class="nav-label">Prospect Tracker</span></button>
       <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();">🏅 <span class="nav-label">Activity Log</span></button>
@@ -343,14 +349,42 @@ input[type="color"]{padding:4px}
 
 <section id="customize" class="app-section hidden">
         <h1 class="page-title">Customize</h1>
-        <p class="page-sub">Personalize OPTIMUM and configure the limited Apps Script connection.</p>
-        <div id="optAgentMgmt" style="display:none;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
+        <p class="page-sub">I-personalize ang kulay at font mo — sa iyo lang ito.</p>
+        <div class="setting-card" id="optAppearanceCard" style="margin:14px 0;max-width:520px">
+          <h3>🎨 My Appearance (Color &amp; Font)</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 12px">Ikaw lang ang maaapektuhan nito — hindi ang ibang agents.</p>
+          <label>Primary Color</label>
+          <input id="myPrimary" type="color" value="#00AFC7" oninput="optPreviewAppearance()">
+          <label>Accent Color</label>
+          <input id="myAccent" type="color" value="#f5c542" oninput="optPreviewAppearance()">
+          <label>Sidebar Color</label>
+          <div id="mySidebarSwatches" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 12px">
+            <button type="button" class="opt-side-sw" data-bg="#ffffff" data-fg="#334155" onclick="optPickSidebar(this)" style="background:#fff;color:#334155;border:2px solid #e3e8ef">White</button>
+            <button type="button" class="opt-side-sw" data-bg="#151a21" data-fg="#dfe4eb" onclick="optPickSidebar(this)" style="background:#151a21;color:#fff">Dark</button>
+            <button type="button" class="opt-side-sw" data-bg="#0e3a47" data-fg="#d6f1f5" onclick="optPickSidebar(this)" style="background:#0e3a47;color:#fff">Teal</button>
+            <button type="button" class="opt-side-sw" data-bg="#3a0f1c" data-fg="#f7d9e0" onclick="optPickSidebar(this)" style="background:#3a0f1c;color:#fff">Maroon</button>
+          </div>
+          <label>Font</label>
+          <select id="myFont" class="field" onchange="optPreviewAppearance()">
+            <option value="Arial,Helvetica,sans-serif">Default (Arial)</option>
+            <option value="'Inter',system-ui,sans-serif">Inter</option>
+            <option value="'Poppins',sans-serif">Poppins</option>
+            <option value="'Roboto',sans-serif">Roboto</option>
+            <option value="'Montserrat',sans-serif">Montserrat</option>
+            <option value="Georgia,'Times New Roman',serif">Georgia (Serif)</option>
+          </select>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button onclick="optSaveAppearance()" style="padding:10px 18px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer">💾 Save Appearance</button>
+            <button onclick="optResetAppearance()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Reset</button>
+          </div>
+        </div>
+        <div id="optAgentMgmt" class="opt-admin-only" style="display:none;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
           <h3 style="margin:0 0 6px">👥 Agent Management</h3>
           <p style="font-size:13px;color:#666;margin:0 0 12px">Mag-add ng agents at pamahalaan ang accounts nila. Pindutin ang <b>Open</b> para makita/i-manage ang workspace ng isang agent, o <b>My Workspace</b> para bumalik sa sarili mong view.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button onclick="optAddAgent()" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;cursor:pointer">+ Add Agent</button><button onclick="optGoMyWorkspace()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">My Workspace</button></div>
           <div id="optAgentMgmtList"></div>
         </div>
-        <div style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
+        <div class="opt-admin-only" style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
           <h3 style="margin:0 0 6px">💾 Data Backup &amp; Restore</h3>
           <p style="font-size:13px;color:#666;margin:0 0 12px">I-download ang backup ng LAHAT ng data (clients, proposals, refresher card, settings, pictures). I-restore ito mula sa PC (o Google Drive file).</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
@@ -370,7 +404,7 @@ input[type="color"]{padding:4px}
           <p style="font-size:11px;color:#999;margin:10px 0 0">Tip: Mag-download ng backup linggo-linggo. Pwede i-restore kahit saang device o browser.</p>
         </div>
 
-        <div class="settings-grid">
+        <div class="settings-grid opt-admin-only">
           <div class="setting-card">
             <h3>Photo / Logo</h3>
             <div class="logo-preview" id="logoPreview">OPTIMUM</div>
@@ -419,10 +453,10 @@ input[type="color"]{padding:4px}
           </div>
         </div>
 
-        <div class="setting-actions">
+        <div class="setting-actions opt-admin-only">
           <button class="save" onclick="saveSettings()">Save Setting</button>
         </div>
-        <div id="saveStatus" class="status"></div>
+        <div id="saveStatus" class="status opt-admin-only"></div>
       </section>
     </main>
   </div>
@@ -11070,6 +11104,42 @@ body.opt-ov #appPage{display:none!important}
       if(which==='rank'){try{window.alogRenderRanking();}catch(e){}}
     };
   }
+})();
+</script>
+<style>
+.opt-side-sw{padding:8px 14px;border-radius:9px;border:2px solid transparent;font-weight:700;font-size:13px;cursor:pointer}
+.opt-side-sw.sel{outline:3px solid var(--primary);outline-offset:1px}
+</style>
+<script>
+/* ===== Personal Appearance: Color + Font + Sidebar color (per-account) ===== */
+(function(){
+  var KEY='optimumAppearance';
+  function _v(id){var el=document.getElementById(id);return el?el.value:'';}
+  function getA(){try{return JSON.parse(localStorage.getItem(KEY)||'null')||{};}catch(e){return {};}}
+  function apply(){var a=getA();var r=document.documentElement.style;
+    if(a.primary){r.setProperty('--primary',a.primary,'important');r.setProperty('--primary2',a.primary,'important');}
+    if(a.accent)r.setProperty('--accent',a.accent,'important');
+    if(a.sidebarBg){r.setProperty('--sidebar-bg',a.sidebarBg,'important');r.setProperty('--sidebar-active',a.sidebarBg.toLowerCase()==='#ffffff'?'#f1f5f9':'rgba(255,255,255,.12)','important');}
+    if(a.sidebarFg)r.setProperty('--sidebar-fg',a.sidebarFg,'important');
+    if(a.font)r.setProperty('--app-font',a.font,'important');
+  }
+  window.optApplyAppearance=apply;
+  window.optPreviewAppearance=function(){var r=document.documentElement.style;var p=_v('myPrimary'),ac=_v('myAccent'),f=_v('myFont');if(p){r.setProperty('--primary',p);r.setProperty('--primary2',p);}if(ac)r.setProperty('--accent',ac);if(f)r.setProperty('--app-font',f);};
+  window.optPickSidebar=function(btn){try{document.querySelectorAll('.opt-side-sw').forEach(function(b){b.classList.remove('sel');});}catch(e){}btn.classList.add('sel');var bg=btn.getAttribute('data-bg'),fg=btn.getAttribute('data-fg');var r=document.documentElement.style;r.setProperty('--sidebar-bg',bg);r.setProperty('--sidebar-fg',fg);r.setProperty('--sidebar-active',bg.toLowerCase()==='#ffffff'?'#f1f5f9':'rgba(255,255,255,.12)');};
+  function curSide(){var s=document.querySelector('.opt-side-sw.sel');return s?{bg:s.getAttribute('data-bg'),fg:s.getAttribute('data-fg')}:null;}
+  window.optSaveAppearance=function(){var s=curSide();var a={primary:_v('myPrimary'),accent:_v('myAccent'),font:_v('myFont')};if(s){a.sidebarBg=s.bg;a.sidebarFg=s.fg;}else{var cur=getA();if(cur.sidebarBg){a.sidebarBg=cur.sidebarBg;a.sidebarFg=cur.sidebarFg;}}try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}apply();try{if(window.optPushNow)window.optPushNow();}catch(e){}alert('Na-save ang iyong appearance ✓');};
+  window.optResetAppearance=function(){try{localStorage.removeItem(KEY);}catch(e){}var r=document.documentElement.style;['--primary','--primary2','--accent','--sidebar-bg','--sidebar-fg','--sidebar-active','--app-font'].forEach(function(v){r.removeProperty(v);});try{if(window.optPushNow)window.optPushNow();}catch(e){}window.optInitAppearanceInputs&&window.optInitAppearanceInputs();alert('Na-reset sa default ✓');};
+  window.optInitAppearanceInputs=function(){var a=getA();var cs=getComputedStyle(document.documentElement);
+    var p=document.getElementById('myPrimary');if(p)p.value=a.primary||(cs.getPropertyValue('--primary').trim()||'#00AFC7');
+    var ac=document.getElementById('myAccent');if(ac)ac.value=a.accent||(cs.getPropertyValue('--accent').trim()||'#f5c542');
+    var f=document.getElementById('myFont');if(f)f.value=a.font||'Arial,Helvetica,sans-serif';
+    try{document.querySelectorAll('.opt-side-sw').forEach(function(b){b.classList.toggle('sel',a.sidebarBg?b.getAttribute('data-bg').toLowerCase()===String(a.sidebarBg).toLowerCase():b.getAttribute('data-bg')==='#ffffff');});}catch(e){}
+  };
+  // apply ASAP and whenever Customize opens
+  try{apply();}catch(e){}
+  document.addEventListener('DOMContentLoaded',function(){try{apply();}catch(e){}});
+  var _sp=window.showPage;
+  if(typeof _sp==='function'){window.showPage=function(p,el){var r=_sp.apply(this,arguments);try{apply();if(p==='customize')setTimeout(window.optInitAppearanceInputs,0);}catch(e){}return r;};}
 })();
 </script>
 </body>

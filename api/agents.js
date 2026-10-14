@@ -2,13 +2,19 @@ const { auth, getUsers, saveUsers, hashPassword, dataKey, kvSet, kvDel, readBody
 module.exports = async (req, res) => {
   const me = auth(req);
   if (!me) return send(res, 401, { error: 'Unauthorized' });
-  if (me.role !== 'admin') return send(res, 403, { error: 'Admin only' });
   try {
     let users = (await getUsers()) || [];
     if (req.method === 'GET') {
-      const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, createdAt: u.createdAt, status: u.status || '', dateCoded: u.dateCoded || '', birthday: u.birthday || '', licVariable: !!u.licVariable, licLife: !!u.licLife }));
+      // Any authenticated user can read the roster for shared birthdays.
+      // Admins get full details; agents get a limited view (name + birthday + status).
+      if (me.role === 'admin') {
+        const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, createdAt: u.createdAt, status: u.status || '', dateCoded: u.dateCoded || '', birthday: u.birthday || '', licVariable: !!u.licVariable, licLife: !!u.licLife }));
+        return send(res, 200, { agents: list });
+      }
+      const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, status: u.status || '', birthday: u.birthday || '' }));
       return send(res, 200, { agents: list });
     }
+    if (me.role !== 'admin') return send(res, 403, { error: 'Admin only' });
     if (req.method === 'POST') {
       const b = await readBody(req);
       const { name, username, password, status, dateCoded, birthday, licVariable, licLife } = b;

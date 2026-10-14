@@ -221,6 +221,13 @@ input[type="color"]{padding:4px}
       <button class="nav-btn opt-settings-nav" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
     </aside>
     <div id="optDrawerBackdrop" class="opt-drawer-backdrop" onclick="optToggleDrawer(false)"></div>
+    <div id="optActionDrawer" class="opt-adrawer" aria-hidden="true">
+      <div class="opt-adrawer-head"><span>⚡ Menu</span><button class="opt-adrawer-x" onclick="optToggleDrawer(false)" aria-label="Close">×</button></div>
+      <button class="opt-adrawer-item" onclick="optToggleDrawer(false);optimumSaveBackup()"><span class="ai">⬇️</span><span>Save / Download Backup</span></button>
+      <button class="opt-adrawer-item" onclick="optToggleDrawer(false);document.getElementById('optRestoreHdr').click()"><span class="ai">⬆️</span><span>Upload / Restore Backup</span></button>
+      <button class="opt-adrawer-item" onclick="optToggleDrawer(false);window.optSyncNow&&optSyncNow()"><span class="ai">🔄</span><span>Sync Now</span></button>
+      <button class="opt-adrawer-item danger" onclick="optToggleDrawer(false);logout()"><span class="ai">🚪</span><span>Log Out</span></button>
+    </div>
 
     <main class="content">
       <section id="home" class="app-section">
@@ -10164,21 +10171,36 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
   #optAgentPicker{max-width:38vw}
   .page-title{font-size:19px!important}
 }
-/* ===== Mobile sidebar DRAWER (hidden by default, ☰ to open) ===== */
-.opt-menu-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);background:#fff;border-radius:11px;cursor:pointer;color:#0f172a;flex:0 0 auto;margin-right:6px;padding:0}
+/* ===== Mobile: ☰ action drawer (Save/Upload/Sync/Logout) + bottom tab bar ===== */
+.opt-menu-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);background:#fff;border-radius:11px;cursor:pointer;color:#0f172a;flex:0 0 auto;margin-right:4px;padding:0}
 .opt-drawer-backdrop{display:none}
+.opt-adrawer{display:none}
 @media(max-width:760px){
   .opt-menu-btn{display:inline-flex}
-  .topbar{display:flex;align-items:center;flex-wrap:wrap}
+  .topbar{display:flex!important;align-items:center;flex-wrap:nowrap;gap:8px}
   .layout{display:block}
-  .sidebar{position:fixed!important;top:0;left:0;bottom:0;width:244px!important;height:100vh;z-index:10060;transform:translateX(-100%);transition:transform .25s ease;box-shadow:12px 0 40px rgba(0,0,0,.3);overflow-y:auto;padding:16px 12px!important;display:flex!important;flex-direction:column}
-  .sidebar .side-title{display:block!important;margin-bottom:6px}
-  .sidebar .nav-btn{text-align:left!important;font-size:15px!important;padding:12px 14px!important}
-  .sidebar .nav-label{display:inline!important}
-  .opt-settings-nav{margin-top:auto}
-  body.opt-drawer-open .sidebar{transform:translateX(0)}
-  body.opt-drawer-open .opt-drawer-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.48);z-index:10055}
-  .content{padding:14px;max-width:100%}
+  /* header action buttons now live inside the ☰ drawer */
+  .user-area .logout{display:none!important}
+  .user-area{gap:8px;flex-wrap:nowrap;margin-left:auto;justify-content:flex-end}
+  #loggedUser{font-size:13px;font-weight:700;max-width:44vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* sidebar -> fixed bottom tab bar */
+  .sidebar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;height:auto!important;flex-direction:row!important;align-items:stretch;gap:2px;padding:6px 4px!important;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;background:#151a21;z-index:9000;box-shadow:0 -6px 22px rgba(0,0,0,.22);transform:none!important;overflow-x:auto;border-top:1px solid rgba(255,255,255,.08)}
+  .sidebar .side-title{display:none!important}
+  .sidebar .nav-btn{flex:1 1 0;min-width:58px;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center!important;font-size:21px!important;line-height:1;padding:7px 3px!important;margin:0!important;border-radius:10px}
+  .sidebar .nav-btn.active::before{display:none}
+  .sidebar .nav-label{display:block!important;font-size:9.5px;font-weight:700;line-height:1.1}
+  .opt-settings-nav{margin-top:0!important}
+  .content{padding:14px 13px 88px!important;max-width:100%}
+  /* ☰ action drawer */
+  .opt-adrawer{display:flex;flex-direction:column;gap:7px;position:fixed;top:0;left:0;bottom:0;width:272px;max-width:84vw;background:#151a21;color:#fff;z-index:10060;transform:translateX(-100%);transition:transform .25s ease;padding:16px 14px;box-shadow:12px 0 40px rgba(0,0,0,.4);overflow-y:auto}
+  body.opt-drawer-open .opt-adrawer{transform:translateX(0)}
+  body.opt-drawer-open .opt-drawer-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:10055}
+  .opt-adrawer-head{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:800;color:#fff;padding:2px 2px 10px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:4px}
+  .opt-adrawer-x{background:transparent;border:0;color:#cbd5e1;font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+  .opt-adrawer-item{display:flex;align-items:center;gap:11px;width:100%;border:0;background:rgba(255,255,255,.06);color:#eef2f7;text-align:left;padding:13px 14px;border-radius:11px;cursor:pointer;font-size:14.5px;font-weight:600}
+  .opt-adrawer-item:active,.opt-adrawer-item:hover{background:rgba(255,255,255,.12)}
+  .opt-adrawer-item.danger{background:rgba(227,38,46,.14);color:#ffb4b4}
+  .opt-adrawer-item .ai{font-size:18px;width:22px;text-align:center;flex:0 0 auto}
 }
 </style>
 <script>
@@ -10629,11 +10651,16 @@ body.opt-ov #appPage{display:none!important}
       sel.value=cur;});
   }
   function loadSharedEvents(){try{authFetch('/api/shared?type=events').then(function(r){if(r.ok){
-      var evs=(r.j&&r.j.events)||[];var u=user()||{};var st=u.status||'';
+      var evs=(r.j&&r.j.events)||[];var u=user()||{};var st=String(u.status||'').toLowerCase();
+      var isRookie=false;try{var dc=u.dateCoded;if(dc){var d0=new Date(dc),nw=new Date();var mo=(nw.getFullYear()-d0.getFullYear())*12+(nw.getMonth()-d0.getMonth());if(nw.getDate()<d0.getDate())mo--;isRookie=(mo>=0&&mo<=12);}}catch(e){}
       window.optSharedEvents=evs.map(function(e){
-        if(e&&e.type==='Training'){var c={};for(var k in e)c[k]=e[k];var rf=(c.reqFor||'all');
-          var req=(rf==='all')||(!!rf&&!!st&&rf.toLowerCase()===String(st).toLowerCase());if(rf==='optional')req=false;
-          c.color=req?'#e3262e':'#f5c542';return c;}
+        if(e&&e.type==='Training'){var c={};for(var k in e)c[k]=e[k];var rf=String(c.reqFor||'all').toLowerCase();
+          var tags=rf.split(',').map(function(t){return t.trim();}).filter(Boolean);
+          var isOpt=(tags.indexOf('optional')>=0||tags.indexOf('recommended')>=0||tags.length===0);
+          var mRookie=tags.indexOf('rookie')>=0&&isRookie;
+          var mStatus=tags.indexOf('all')>=0||(!!st&&tags.indexOf(st)>=0);
+          if(mRookie)c.color='#f59e0b';else if(mStatus&&!isOpt)c.color='#e3262e';else c.color='#f5c542';
+          return c;}
         return e;});
       if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}}}).catch(function(){});}catch(e){}}
   // ---- shared branding (admin sets; everyone sees) ----
@@ -10777,27 +10804,30 @@ body.opt-ov #appPage{display:none!important}
     if(!x){alert('Activity not found.');return;}
     var old=document.getElementById('optShareDlg');if(old)old.parentNode.removeChild(old);
     var m=document.createElement('div');m.id='optShareDlg';m.className='optaa-back';
-    var rf=(x.reqFor||'all');var ftC=(rf==='all'||rf==='fulltime')?'checked':'';var ptC=(rf==='all'||rf==='parttime')?'checked':'';
     m.innerHTML='<div class="optaa-box" style="max-width:420px">'+
       '<div class="optaa-head"><h2>📢 Share to all agents</h2><button class="optaa-x" id="osdX">×</button></div>'+
       '<div style="font-weight:700;color:#475569;margin-bottom:6px">'+esc((x.title||'Activity))').replace(/\)+$/,''))+'</div>'+
       '<div style="color:#64748b;font-size:13px;margin-bottom:12px">Required for (lagyan ng check):</div>'+
-      '<div class="optaa-checks" style="height:auto"><label class="optaa-chk"><input type="checkbox" id="osdFT" '+ftC+'> <b>FT</b> — Full Time</label><label class="optaa-chk"><input type="checkbox" id="osdPT" '+ptC+'> <b>PT</b> — Part Time</label></div>'+
-      '<div style="color:#94a3b8;font-size:11px;margin-top:6px">Pwede i-check pareho (required sa lahat). Walang check = Optional.</div>'+
-      '<div class="optaa-actions"><button class="optaa-cancel" id="osdCancel">Cancel</button><button class="optaa-save" id="osdShare">📢 Share</button></div>'+
+      '<div class="optaa-checks" style="height:auto"><label class="optaa-chk"><input type="checkbox" id="osdFT"> <b>FT</b> — Full Time</label><label class="optaa-chk"><input type="checkbox" id="osdPT"> <b>PT</b> — Part Time</label><label class="optaa-chk" style="border-color:#f59e0b;background:#fff7ed"><input type="checkbox" id="osdRK"> <b style="color:#d97706">Rookie</b> — ≤12 months</label></div>'+
+      '<div style="color:#94a3b8;font-size:11px;margin-top:6px">Default: walang check = Optional. I-check kung required (pwede sabay-sabay).</div>'+
+      '<div class="optaa-actions" style="flex-wrap:wrap;gap:8px"><button class="optaa-cancel" id="osdCancel">Cancel</button><button class="optaa-save" id="osdRec" style="background:#f59e0b">⭐ Recommended</button><button class="optaa-save" id="osdShare">📢 Share</button></div>'+
     '</div>';
     document.body.appendChild(m);
     var close=function(){try{m.parentNode.removeChild(m);}catch(e){}};
     document.getElementById('osdX').onclick=close;document.getElementById('osdCancel').onclick=close;m.addEventListener('click',function(e){if(e.target===m)close();});
-    document.getElementById('osdShare').onclick=function(){
-      var ft=document.getElementById('osdFT').checked,pt=document.getElementById('osdPT').checked;
-      var reqFor=(ft&&pt)?'all':(ft?'fulltime':(pt?'parttime':'optional'));
+    var doShare=function(reqFor){
       try{var own=JSON.parse(localStorage.getItem('optimum_calendar_v1'))||[];var ix=own.findIndex(function(z){return z.id===id;});
         if(ix>=0){own[ix].reqFor=reqFor;localStorage.setItem('optimum_calendar_v1',JSON.stringify(own));}
       }catch(e){}
       close();
       try{window.optShareEventById(id,reqFor);}catch(e){}
     };
+    document.getElementById('osdShare').onclick=function(){
+      var ft=document.getElementById('osdFT').checked,pt=document.getElementById('osdPT').checked,rk=document.getElementById('osdRK').checked;
+      var tags=[];if(ft)tags.push('fulltime');if(pt)tags.push('parttime');if(rk)tags.push('rookie');
+      doShare(tags.length?tags.join(','):'optional');
+    };
+    document.getElementById('osdRec').onclick=function(){ doShare('recommended'); };
   };
   // share an existing event straight from the activity list (admin)
   window.optShareEventById=function(id,reqForOverride){
@@ -10976,8 +11006,14 @@ body.opt-ov #appPage{display:none!important}
   function optGetAttendance(){try{return JSON.parse(localStorage.getItem('optimumTrainingAttendance')||'{}');}catch(e){return {};}}
   window.optMarkAttended=function(id,val){try{var a=optGetAttendance();if(val)a[id]=true;else delete a[id];localStorage.setItem('optimumTrainingAttendance',JSON.stringify(a));}catch(e){}try{renderCalendar();}catch(e){}try{if(typeof closeModal==='function')closeModal();}catch(e){}try{if(window.optPushNow)window.optPushNow();}catch(e){}};
   window.optTrainingAttendanceModal=function(x){
-    var att=optGetAttendance()[x.id];var rf=x.reqFor||'all';
-    var reqLabel=rf==='optional'?'🟡 Optional':(rf==='all'?'🔴 Required (All)':'🔴 Required — '+rf.charAt(0).toUpperCase()+rf.slice(1));
+    var att=optGetAttendance()[x.id];var rf=String(x.reqFor||'all').toLowerCase();
+    var _tg=rf.split(',').map(function(t){return t.trim();}).filter(Boolean);
+    var _nm={fulltime:'Full Time',parttime:'Part Time',rookie:'Rookie',all:'All'};
+    var reqLabel;
+    if(rf==='optional'||_tg.length===0){reqLabel='🟡 Optional';}
+    else if(rf==='recommended'){reqLabel='⭐ Recommended';}
+    else if(_tg.indexOf('rookie')>=0){reqLabel='🟠 Required — '+_tg.map(function(t){return _nm[t]||t;}).join(', ');}
+    else{reqLabel='🔴 Required — '+_tg.map(function(t){return _nm[t]||t;}).join(', ');}
     var E=(typeof esc==='function')?esc:function(s){return s;};var FT=(typeof formatTime==='function')?formatTime:function(a,b){return (a||'')+(b?('-'+b):'');};
     if(typeof modal!=='function')return;
     modal('<div class="activity-head"><h2>🎓 '+E(x.title||'Training')+'</h2><button class="activity-close" onclick="closeModal()">×</button></div>'+

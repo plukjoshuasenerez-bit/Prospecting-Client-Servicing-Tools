@@ -1,8 +1,14 @@
 const { ensureSeed, getUsers, verifyPassword, signToken, readBody, send } = require('./_lib');
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
   try {
     await ensureSeed();
+    if (req.method === 'GET') {
+      // public list for the login account picker (names + usernames only, no secrets)
+      const users = (await getUsers()) || [];
+      const list = users.map(u => ({ name: u.name, username: u.username, role: u.role }));
+      return send(res, 200, { users: list });
+    }
+    if (req.method !== 'POST') return send(res, 405, { error: 'POST only' });
     const { username, password } = await readBody(req);
     if (!username || !password) return send(res, 400, { error: 'username at password kailangan' });
     const users = (await getUsers()) || [];

@@ -10013,6 +10013,82 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
   .activity-actions{gap:8px}
   .activity-actions button{flex:1 1 100%;height:46px;white-space:normal;font-size:13px;min-width:0}
 }
+/* =================================================================
+   MOBILE OPTIMIZATION (phones 320–480px). Scoped so desktop/tablet
+   layouts are untouched. Keeps all features; tables scroll inside
+   their own containers; no page-level horizontal overflow.
+   ================================================================= */
+@media(max-width:600px){
+  /* page overflow guard */
+  html,body{overflow-x:hidden;max-width:100%}
+  #appPage,.layout,.content,.app-section,.card,main{min-width:0;max-width:100%}
+  /* typography / spacing */
+  .content{padding:13px!important}
+  .page-title{font-size:clamp(18px,5.6vw,23px)!important;margin-bottom:4px}
+  .page-sub{font-size:12px;margin-bottom:12px}
+  .card{padding:15px!important;border-radius:14px!important}
+  /* header */
+  .topbar{padding:8px 10px!important}
+  .top-mark{width:34px;height:34px}
+  .top-name{font-size:17px}.top-subtitle{font-size:9px}
+  .user-area{gap:6px}
+  #optAgentPicker{max-width:42vw;padding:7px 9px;font-size:12px}
+  .user-area .logout{padding:7px 8px}
+  /* sidebar: compact icon rail */
+  .sidebar{width:56px!important;padding:10px 5px!important}
+  .nav-btn{padding:11px 6px;font-size:19px;text-align:center}
+  /* calendar */
+  .calendar-toolbar{flex-direction:column;align-items:stretch;gap:9px}
+  .calendar-nav{justify-content:space-between}
+  .cal-title{min-width:0;font-size:17px;flex:1;text-align:center}
+  .cal-view-toggle{align-self:stretch}
+  .cal-vt{flex:1;justify-content:center;padding:9px 8px;font-size:13px}
+  .cal-tools{flex-wrap:wrap;gap:7px}
+  .cal-tools .cal-btn{flex:1 1 auto;justify-content:center;padding:9px 10px;font-size:13px;text-align:center}
+  .calendar-box{padding:6px;overflow-x:auto;max-width:100%}
+  .calendar-grid{grid-template-columns:repeat(7,minmax(42px,1fr));min-width:306px}
+  .cal-cell{min-height:62px;padding:3px}
+  .cal-num{font-size:10px}
+  .event-chip{font-size:8px;padding:3px 4px}
+  .calendar-lower{grid-template-columns:1fr}
+  .cal-reqleg{font-size:12px}
+  /* metric / KPI cards -> 2 columns */
+  .alog-kpis{display:grid!important;grid-template-columns:1fr 1fr;gap:10px}
+  .alog-kpi{min-width:0;padding:13px}
+  .alog-kpi strong{font-size:19px}
+  .prospect-kpis{display:grid!important;grid-template-columns:1fr 1fr;gap:8px;overflow:visible}
+  .prospect-kpi{min-width:0}
+  /* tabs: compact, horizontally scrollable within their row (not the page) */
+  .alog-tabs,.view-tabs,.storage-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap}
+  .alog-tab{padding:8px 13px;font-size:13px;white-space:nowrap}
+  /* activity log compact grids */
+  .alog-addtype{grid-template-columns:1fr}
+  .alog-trow,.alog-thead{grid-template-columns:1fr 44px 54px 48px;gap:5px;font-size:12px}
+  .alog-row{grid-template-columns:82px 1fr 40px 60px 28px;gap:5px;font-size:12px}
+  .alog-rank-head,.alog-rank-row{grid-template-columns:32px 1fr 46px 56px;gap:6px}
+  .alog-dbar-col{min-width:16px}
+  /* data tables: scroll inside their own wrap, never the page */
+  .table-wrap,.rec-table-wrap,.calendar-box{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  .prospect-filter-row{grid-template-columns:1fr 1fr}
+  .prospect-stage-tabs{min-width:0;grid-template-columns:repeat(2,1fr)}
+  .rec-stage-tabs{overflow-x:auto;flex-wrap:nowrap}
+  /* forms + modals fit the viewport and scroll vertically */
+  .modal,.modal-box,.optaa-box,.rec-modal-box,.editor-card.is-open,.prospect-modal .modal-box{width:calc(100vw - 22px)!important;max-width:calc(100vw - 22px)!important;max-height:90vh!important;overflow:auto!important;padding:18px!important;border-radius:16px!important}
+  .activity-form{grid-template-columns:1fr}
+  .activity-field.full{grid-column:auto}
+  .optaa-grid,.prospect-modal .grid{grid-template-columns:1fr!important}
+  .rec-form-modal{grid-template-columns:1fr!important}
+  .optcard{padding:26px 20px!important;border-radius:24px!important}
+  .opt-logo{font-size:34px}
+  /* keep images/charts within parent */
+  img,canvas,svg,table{max-width:100%}
+}
+@media(max-width:380px){
+  .cal-tools .cal-btn{font-size:12px;padding:8px 8px}
+  .alog-kpi strong{font-size:17px}
+  #optAgentPicker{max-width:38vw}
+  .page-title{font-size:19px!important}
+}
 </style>
 <script>
 var ALOG_KEY="optimumActivityLog";

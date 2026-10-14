@@ -249,7 +249,7 @@ input[type="color"]{padding:4px}
         </div>
         <div id="calListView" style="display:none">
           <div class="calendar-panel">
-            <div class="list-toolbar"><h3 style="margin:0">List View</h3><select id="listFilter" onchange="renderActivityList()"><option value="all">All</option><option>Training</option><option>Meeting</option><option>Client Servicing</option><option>Recruitment</option><option>Birthday</option><option>Other</option></select></div>
+            <div class="list-toolbar"><h3 style="margin:0">List View</h3><select id="listFilter" onchange="renderActivityList()"><option value="all">All</option><option>Training</option><option>Meeting</option><option>Client Servicing</option><option>Recruitment</option><option>Birthday</option><option>Other</option><option>Policy Anniversary</option><option>Policy Review</option></select><select id="listReviewStatus" style="display:none" onchange="renderActivityList()"><option value="all">All Status</option><option value="inforce">Inforce</option><option value="lapse">Lapse</option><option value="surrender">Surrender</option></select></div>
             <div id="activityList"></div>
           </div>
         </div>
@@ -10050,6 +10050,13 @@ body.opt-ro .content textarea{pointer-events:none!important;background:#f3f5f9!i
 .optam-chip.ten{background:#e0f2fe;color:#0369a1}
 .optam-chip.lic{background:#f3e8ff;color:#7c3aed}
 .optam-chip.date{background:#f1f5f9;color:#64748b}
+.optam-chip.bday{background:#fce7f3;color:#9d174d}
+/* policy anniversary / review list */
+.opt-anniv-head{font-weight:900;color:#0f172a;padding:6px 2px 10px;font-size:14px}
+.opt-anniv-row.done{opacity:.55}
+.opt-anniv-chk{display:flex;align-items:center;margin-right:2px}
+.opt-anniv-chk input{width:18px;height:18px}
+.list-toolbar #listReviewStatus{height:38px;border:1px solid var(--border);border-radius:9px;padding:0 10px;background:#fff;margin-left:6px}
 /* ================= PREMIUM POLISH (design only — palette unchanged) ================= */
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .content{padding:30px}
@@ -10509,6 +10516,7 @@ body.opt-ov #appPage{display:none!important}
         '<div class="optaa-f"><label>Password '+(isEdit?'(iwan blanko kung di babaguhin)':'*')+'</label><input id="aaPass" placeholder="'+(isEdit?'bagong password':'password')+'"></div>'+
         '<div class="optaa-f"><label>Status</label><select id="aaStatus"><option value="">—</option><option value="Fulltime">Fulltime</option><option value="Parttime">Parttime</option></select></div>'+
         '<div class="optaa-f"><label>Date Coded</label><input id="aaDate" type="date" value="'+(isEdit?ev(existing.dateCoded):'')+'"></div>'+
+        '<div class="optaa-f"><label>🎂 Birthday</label><input id="aaBday" type="date" value="'+(isEdit?ev(existing.birthday):'')+'"></div>'+
         '<div class="optaa-f full"><label>License</label><div class="optaa-checks"><label class="optaa-chk"><input type="checkbox" id="aaLicVar"'+(isEdit&&existing.licVariable?' checked':'')+'> Variable</label><label class="optaa-chk"><input type="checkbox" id="aaLicLife"'+(isEdit&&existing.licLife?' checked':'')+'> Life</label><span class="optaa-hint">(Pag check pareho = Dual License)</span></div></div>'+
       '</div>'+
       '<div class="optaa-actions"><button class="optaa-cancel" id="optaaCancel">Cancel</button><button class="optaa-save" id="optaaSave">'+(isEdit?'Save Changes':'+ Add Agent')+'</button></div>'+
@@ -10525,7 +10533,7 @@ body.opt-ov #appPage{display:none!important}
       var btn=document.getElementById('optaaSave');
       if(isEdit){
         if(!name||!username){alert('Name at Username kailangan.');return;}
-        var pl={id:existing.id,name:name,username:username,status:g('aaStatus'),dateCoded:g('aaDate'),
+        var pl={id:existing.id,name:name,username:username,status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
           licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
         if(password)pl.password=password;
         btn.disabled=true;btn.textContent='Saving…';
@@ -10536,7 +10544,7 @@ body.opt-ov #appPage{display:none!important}
         return;
       }
       if(!name||!username||!password){alert('Name, Username, Password kailangan.');return;}
-      var payload={name:name,username:username,password:password,status:g('aaStatus'),dateCoded:g('aaDate'),
+      var payload={name:name,username:username,password:password,status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
         licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
       btn.disabled=true;btn.textContent='Adding…';
       API.addAgent(payload).then(function(r){
@@ -10569,7 +10577,9 @@ body.opt-ov #appPage{display:none!important}
       if(a.status)chips+='<span class="optam-chip st-'+String(a.status).toLowerCase()+'">'+esc(a.status)+'</span>';
       if(ten)chips+='<span class="optam-chip ten">'+esc(ten)+'</span>';
       if(lic)chips+='<span class="optam-chip lic">'+esc(lic)+'</span>';
+      if(a.birthday)chips+='<span class="optam-chip bday">🎂 '+esc(a.birthday)+'</span>';
       if(a.dateCoded)chips+='<span class="optam-chip date">Coded '+esc(a.dateCoded)+'</span>';
+      if(a.birthday)chips+='<span class="optam-chip bday">🎂 '+esc(a.birthday)+'</span>';
       return '<div class="optam-card"><div class="optam-top"><div><div class="optam-nm">'+esc(a.name)+(a.id===cur?' <b style="color:#16a34a">(viewing)</b>':'')+'</div><div class="optam-u">@'+esc(a.username)+'</div></div><div class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-edit" onclick="optEditAgentById(&#39;'+a.id+'&#39;)">✎ Edit</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></div></div>'+(chips?'<div class="optam-chips">'+chips+'</div>':'')+'</div>';
     }).join('');
   });}
@@ -10655,6 +10665,7 @@ body.opt-ov #appPage{display:none!important}
     if(u&&u.role==='admin'){renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
     loadSharedEvents();
     optLoadBranding();
+    try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}
     // default view = Calendar on open
     try{var _cal=document.querySelector('.nav-btn[data-page="calendar"]');if(_cal&&typeof showPage==='function')showPage('calendar',_cal);}catch(e){}
     dirty=false;setSaveNote('');
@@ -10695,9 +10706,11 @@ body.opt-ov #appPage{display:none!important}
       var own=[]; try{own=_origGet()||[];}catch(e){own=[];}
       var ids={}; own.forEach(function(e){if(e&&e.id)ids[e.id]=1;});
       var sh=(window.optSharedEvents||[]).filter(function(e){return e&&!ids[e.id];}).map(function(e){var c={};for(var k in e)c[k]=e[k];c._shared=true;return c;});
-      return own.concat(sh);
+      sh.forEach(function(e){ids[e.id]=1;});
+      var bd=(window.optBirthdayEvents||[]).filter(function(e){return e&&!ids[e.id];});
+      return own.concat(sh).concat(bd);
     };
-    window.setCalendar=function(a){var ownOnly=(a||[]).filter(function(e){return !(e&&e._shared);});return _origSet(ownOnly);};
+    window.setCalendar=function(a){var ownOnly=(a||[]).filter(function(e){return !(e&&(e._shared||e._bday));});return _origSet(ownOnly);};
   }
 
   // --- share a calendar event to all agents (admin) ---
@@ -10818,6 +10831,69 @@ body.opt-ov #appPage{display:none!important}
       catch(e){setTimeout(function(){try{if(window.optPushBranding)window.optPushBranding();}catch(e){}},800);}
       return r;};
   }
+  // ===== Client & agent helpers =====
+  function optReadClients(){try{var db=JSON.parse(localStorage.getItem('teamJoshClient Summary_v3')||'{}');return (db&&Array.isArray(db.clients))?db.clients:[];}catch(e){return [];}}
+  function optIsoDate(s){try{return (typeof isoDate==='function')?isoDate(s):'';}catch(e){return '';}}
+  function optFirst(n){return String(n||'').trim().split(/\s+/)[0]||String(n||'');}
+  function optPolicyTenure(eff){var iso=optIsoDate(eff);if(!/^\d{4}-\d{2}-\d{2}/.test(iso))return {years:0,months:0,txt:''};var d=new Date(iso),now=new Date();var months=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());if(now.getDate()<d.getDate())months--;if(months<0)months=0;var y=Math.floor(months/12),m=months%12;return {years:y,months:m,txt:(y>0?y+'y ':'')+m+'mo'};}
+  function optClientName(c){return c.policyOwner||c.name||c.policyInsured||c.clientName||'';}
+  function optClientStatus(c){return String(c.status||'Inforce');}
+  // ===== Birthdays on the calendar (agents + clients): pink 🎂 + first name, recurring yearly =====
+  window.optBirthdayEvents=window.optBirthdayEvents||[];
+  window.optLoadAgentBirthdays=function(){
+    var evs=[];var ty=new Date().getFullYear();var yrs=[ty-1,ty,ty+1];
+    function addB(id,name,bday,who){ var iso=optIsoDate(bday)||(''+(bday||'')); if(!/^\d{4}-\d{2}-\d{2}/.test(iso))return; var mmdd=iso.slice(5,10); var first=optFirst(name); if(!first)return;
+      yrs.forEach(function(y){ evs.push({id:'bd_'+who+'_'+id+'_'+y,date:y+'-'+mmdd,type:'Birthday',title:'🎂 '+first,start:'',end:'',color:'#e83e8c',person:name,notes:(who==='ag'?'Agent Birthday':'Client Birthday'),_bday:true}); }); }
+    try{ optReadClients().forEach(function(c,i){ var nm=optClientName(c); if(nm&&c.birthday) addB('c'+i,nm,c.birthday,'cl'); }); }catch(e){}
+    function finalize(){ window.optBirthdayEvents=evs; if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}} }
+    if(window.optIsAdmin&&window.optIsAdmin()&&window.optAuthFetch){
+      window.optAuthFetch('/api/agents').then(function(r){ if(r.ok){ var list=(r.j&&r.j.agents)||[]; list.forEach(function(a){ if(a.birthday) addB(a.id,a.name,a.birthday,'ag'); }); } finalize(); }).catch(finalize);
+    } else { finalize(); }
+  };
+  // ===== Policy Anniversary list (this month) + Policy Review list (status filter) =====
+  function optAnnivDone(){try{return JSON.parse(localStorage.getItem('optimumAnnivDone')||'{}');}catch(e){return {};}}
+  window.optToggleAnnivDone=function(key){try{var a=optAnnivDone();if(a[key])delete a[key];else a[key]=true;localStorage.setItem('optimumAnnivDone',JSON.stringify(a));}catch(e){}try{if(window.optPushNow)window.optPushNow();}catch(e){}optRenderPolicyAnniversary();};
+  function esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function optRenderPolicyAnniversary(){
+    var box=document.getElementById('activityList');if(!box)return;
+    var mon=new Date().getMonth()+1;var clients=optReadClients();var done=optAnnivDone();
+    var rows=[];
+    clients.forEach(function(c,i){ var eff=c.effectivity||c.effectivityDate; var iso=optIsoDate(eff); if(!/^\d{4}-\d{2}-\d{2}/.test(iso))return; var em=parseInt(iso.slice(5,7),10); if(em!==mon)return;
+      var nm=optClientName(c); var ten=optPolicyTenure(eff); var yrsN=ten.years; var key='an_'+(c.policyNumber||nm||i)+'_'+iso.slice(0,7).slice(5);
+      rows.push({key:key,name:nm,policy:c.policyNumber||'',day:parseInt(iso.slice(8,10),10),yrs:yrsN,ten:ten.txt,status:optClientStatus(c),done:!!done[key]}); });
+    rows.sort(function(a,b){return a.day-b.day;});
+    if(!rows.length){box.innerHTML='<div class="activity-row"><small>Walang policy anniversary ngayong buwan.</small></div>';return;}
+    box.innerHTML='<div class="opt-anniv-head">🎉 Policy Anniversary ngayong buwan ('+rows.length+')</div>'+rows.map(function(r){
+      return '<div class="activity-row opt-anniv-row'+(r.done?' done':'')+'">'
+        +'<label class="opt-anniv-chk"><input type="checkbox" '+(r.done?'checked':'')+' onchange="optToggleAnnivDone(\''+r.key+'\')"> </label>'
+        +'<div class="activity-main"><b>'+esc2(r.name)+'</b>'+(r.policy?' <span class="type-badge">#'+esc2(r.policy)+'</span>':'')+'<br><small>Day '+r.day+' • '+(r.yrs>0?('Happy '+r.yrs+ordinal(r.yrs)+' Anniversary'):'1st year')+' • Tenure: '+esc2(r.ten)+' • '+esc2(r.status)+'</small></div>'
+        +'<span class="type-badge" style="background:#fee2e2;color:#991b1b">Anniv</span></div>';
+    }).join('');
+  }
+  function ordinal(n){var s=['th','st','nd','rd'],v=n%100;return (s[(v-20)%10]||s[v]||s[0]);}
+  function optRenderPolicyReview(){
+    var box=document.getElementById('activityList');if(!box)return;
+    var rs=document.getElementById('listReviewStatus');var f=rs?rs.value:'all';
+    var clients=optReadClients();
+    var rows=clients.filter(function(c){ if(f==='all')return true; return optClientStatus(c).toLowerCase().indexOf(f)>=0; });
+    if(!rows.length){box.innerHTML='<div class="activity-row"><small>Walang client para sa status na ito.</small></div>';return;}
+    function badge(st){var l=st.toLowerCase();var bg='#eef2f5',cl='#475569';if(l.indexOf('inforce')>=0){bg='#dcfce7';cl='#15803d';}else if(l.indexOf('lapse')>=0){bg='#fee2e2';cl='#dc2626';}else if(l.indexOf('surrender')>=0){bg='#f1f5f9';cl='#64748b';}return '<span class="type-badge" style="background:'+bg+';color:'+cl+'">'+esc2(st)+'</span>';}
+    box.innerHTML='<div class="opt-anniv-head">📋 Quarterly Policy Review ('+rows.length+')</div>'+rows.map(function(c){
+      var nm=optClientName(c);var eff=optIsoDate(c.effectivity||c.effectivityDate);var ten=optPolicyTenure(c.effectivity||c.effectivityDate);
+      return '<div class="activity-row"><div class="activity-main"><b>'+esc2(nm)+'</b>'+(c.policyNumber?' <span class="type-badge">#'+esc2(c.policyNumber)+'</span>':'')+'<br><small>'+(eff?('Effectivity '+eff+' • '):'')+(ten.txt?('Tenure '+esc2(ten.txt)):'')+'</small></div>'+badge(optClientStatus(c))+'</div>';
+    }).join('');
+  }
+  window.optRenderPolicyAnniversary=optRenderPolicyAnniversary;
+  window.optRenderPolicyReview=optRenderPolicyReview;
+  // route the List filter to the special renderers
+  var _origRAL=window.renderActivityList;
+  window.renderActivityList=function(){
+    var fEl=document.getElementById('listFilter');var f=fEl?fEl.value:'all';
+    var rs=document.getElementById('listReviewStatus');if(rs)rs.style.display=(f==='Policy Review')?'':'none';
+    if(f==='Policy Anniversary'){try{return optRenderPolicyAnniversary();}catch(e){}}
+    if(f==='Policy Review'){try{return optRenderPolicyReview();}catch(e){}}
+    if(typeof _origRAL==='function')return _origRAL.apply(this,arguments);
+  };
   // ===== Calendar view toggle =====
   window.calSetView=function(v){
     var g=document.getElementById('calGridView'),l=document.getElementById('calListView'),cb=document.getElementById('calViewCalBtn'),lb=document.getElementById('calViewListBtn');

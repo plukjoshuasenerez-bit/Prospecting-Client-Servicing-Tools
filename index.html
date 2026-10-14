@@ -213,7 +213,7 @@ input[type="color"]{padding:4px}
   <div class="layout">
     <aside class="sidebar">
       <div class="side-title" id="sideTitle">OPTIMUM</div>
-      <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this)">📅 <span class="nav-label">Calendar</span></button>
+      <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this);try{window.optLoadAgentBirthdays&&window.optLoadAgentBirthdays();}catch(e){}">📅 <span class="nav-label">Calendar</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)">🎯 <span class="nav-label">Prospect Tracker</span></button>
       <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();">🏅 <span class="nav-label">Activity Log</span></button>
       <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();">🧲 <span class="nav-label">Recruitment Tracker</span></button>
@@ -10930,8 +10930,12 @@ body.opt-ov #appPage{display:none!important}
     try{ optReadClients().forEach(function(c,i){ var nm=optClientName(c); if(nm&&c.birthday) addB('c'+i,nm,c.birthday,'cl'); }); }catch(e){}
     function finalize(){ window.optBirthdayEvents=evs; if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}} }
     if(window.optIsAdmin&&window.optIsAdmin()&&window.optAuthFetch){
-      window.optAuthFetch('/api/agents').then(function(r){ if(r.ok){ var list=(r.j&&r.j.agents)||[]; list.forEach(function(a){ if(a.birthday) addB(a.id,a.name,a.birthday,'ag'); }); } finalize(); }).catch(finalize);
-    } else { finalize(); }
+      window.optAuthFetch('/api/agents').then(function(r){ var list=(r&&r.ok&&r.j&&r.j.agents)||window._optAgentsCache||[]; list.forEach(function(a){ if(a.birthday) addB(a.id,a.name,a.birthday,'ag'); }); finalize(); }).catch(function(){ try{(window._optAgentsCache||[]).forEach(function(a){ if(a.birthday) addB(a.id,a.name,a.birthday,'ag'); });}catch(e){} finalize(); });
+    } else {
+      // agent: show their own birthday (admin manages it; comes from login profile)
+      try{ var _me=(typeof user==='function'?user():null); if(_me&&_me.birthday) addB(_me.id||'self',_me.name,_me.birthday,'ag'); }catch(e){}
+      finalize();
+    }
   };
   // ===== Policy Anniversary list (this month) + Policy Review list (status filter) =====
   function optAnnivDone(){try{return JSON.parse(localStorage.getItem('optimumAnnivDone')||'{}');}catch(e){return {};}}

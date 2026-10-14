@@ -15,6 +15,6 @@ module.exports = async (req, res) => {
     const u = users.find(x => String(x.username).toLowerCase() === String(username).toLowerCase());
     if (!u || !verifyPassword(password, u.pass)) return send(res, 401, { error: 'Maling username o password' });
     const token = signToken({ uid: u.id, role: u.role, name: u.name, status: u.status || '', exp: Date.now() + 1000*60*60*24*30 });
-    return send(res, 200, { token, user: { id: u.id, name: u.name, username: u.username, role: u.role, status: u.status || '', dateCoded: u.dateCoded || '', licVariable: !!u.licVariable, licLife: !!u.licLife } });
+    return send(res, 200, { token, user: { id: u.id, name: u.name, username: u.username, role: u.role, status: u.status || '', dateCoded: u.dateCoded || '', birthday: u.birthday || '', licVariable: !!u.licVariable, licLife: !!u.licLife } });
   } catch (e) { return send(res, 500, { error: e.message }); }
 };

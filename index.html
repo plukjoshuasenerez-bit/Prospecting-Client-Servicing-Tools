@@ -10479,6 +10479,7 @@ body.opt-ov #appPage{display:none!important}
   function optCanon(obj){try{var ks=Object.keys(obj||{}).sort();return ks.map(function(k){return k+'\u0001'+obj[k];}).join('\u0002');}catch(e){return '';}}
   function restore(keys){localStorage.clear();Object.keys(keys||{}).forEach(function(k){try{localStorage.setItem(k,keys[k]);}catch(e){}});}
   function hydrate(aid){
+    window._optSwitching=true; // block any stale cross-account save while loading another account
     showOverlay('<div style="text-align:center;padding:30px 0"><h2>Loading account…</h2><p class="sub">Kinukuha ang data mula cloud.</p></div>');
     API.getData(aid).then(function(r){
       if(!r.ok){showOverlay('<h2>Error</h2><p class="sub">'+(r.j.error||'Hindi makuha ang data')+'</p><button class="optbtn" onclick="location.reload()">Retry</button>');return;}
@@ -10495,7 +10496,7 @@ body.opt-ov #appPage{display:none!important}
   function scheduleSave(){if(_saveTimer)clearTimeout(_saveTimer);_saveTimer=setTimeout(function(){if(dirty&&!saving&&currentAid())pushNow();},800);}
   try{localStorage.setItem=function(k,v){dirty=true;try{scheduleSave();}catch(e){}return _si.call(localStorage,k,v);};}catch(e){}
   function currentAid(){var u=user();if(!u)return null;return u.role==='admin'?ss.getItem('optAgentId'):u.id;}
-  function pushNow(cb){if(document.body.classList.contains('opt-ro')){cb&&cb();return;}var aid=currentAid();if(!aid||!tok()){cb&&cb();return;}saving=true;setSaveNote('Saving…');var snap=snapshot();
+  function pushNow(cb){if(window._optSwitching||document.body.classList.contains('opt-ro')){cb&&cb();return;}var aid=currentAid();if(!aid||!tok()){cb&&cb();return;}saving=true;setSaveNote('Saving…');var snap=snapshot();
     API.saveData(aid,snap).then(function(){dirty=false;saving=false;setSaveNote('Saved ✓');try{ss.setItem('optLoadedCanon',optCanon(snap));}catch(e){}cb&&cb();})
     .catch(function(){saving=false;setSaveNote('Save failed');cb&&cb();});}
   function setSaveNote(t){var el=document.getElementById('optSaveNote');if(el){el.innerHTML='';el.title=t||'';}}
@@ -10511,7 +10512,7 @@ body.opt-ov #appPage{display:none!important}
   // auto cross-device sync: when the tab/app regains focus, pull if the cloud copy changed on another device
   var _pullBusy=false;
   function pullIfRemoteNewer(){
-    if(dirty||saving||_pullBusy)return;var aid=currentAid();if(!aid||!tok())return;_pullBusy=true;
+    if(window._optSwitching||dirty||saving||_pullBusy)return;var aid=currentAid();if(!aid||!tok())return;_pullBusy=true;
     API.getData(aid).then(function(r){_pullBusy=false;if(!r.ok)return;if(dirty||saving)return;
       var remote=optCanon((r.j.data&&r.j.data.keys)||{});var local=ss.getItem('optLoadedCanon');if(local==null)local=optCanon(snapshot());
       if(remote!==local){setSaveNote('Updating…');ss.removeItem('optHydratedFor');hydrate(aid);}
@@ -10522,7 +10523,7 @@ body.opt-ov #appPage{display:none!important}
 
   // ---------- logout ----------
   function doLogout(){pushNowSafe();['optToken','optUser','optAgentId','optHydratedFor','optimum_logged_in'].forEach(function(k){ss.removeItem(k);});location.reload();}
-  function pushNowSafe(){if(document.body.classList.contains('opt-ro'))return;try{var aid=currentAid();if(dirty&&aid&&tok()){fetch('/api/data',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify({agentId:aid,keys:snapshot()})});}}catch(e){}}
+  function pushNowSafe(){if(window._optSwitching||document.body.classList.contains('opt-ro'))return;try{var aid=currentAid();if(dirty&&aid&&tok()){fetch('/api/data',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify({agentId:aid,keys:snapshot()})});}}catch(e){}}
   window.logout=doLogout; window.optLogout=doLogout;
 
   // ---------- login screen ----------
@@ -10667,7 +10668,7 @@ body.opt-ov #appPage{display:none!important}
   }
   function optLicenseLabel(v,l){if(v&&l)return 'Dual License';if(v)return 'Variable';if(l)return 'Life';return '';}
   window.optTenure=optTenure; window.optLicenseLabel=optLicenseLabel;
-  function openAgent(aid){ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();}
+  function openAgent(aid){pushNow(function(){window._optSwitching=true;ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();});}
   function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}var list=r.j.agents||[];var cur=ss.getItem('optAgentId')||'admin';
     window._optAgentsCache=list;
     if(!list.length){box.innerHTML='<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';return;}
@@ -10687,7 +10688,7 @@ body.opt-ov #appPage{display:none!important}
   window.optOpenAgent=openAgent;
   window.optDelAgent=function(id){if(!confirm('Alisin ang agent na ito? Mabubura ang data nila.'))return;API.delAgent(id).then(function(){optRenderAgentsInSettings();try{renderAgentPicker(ss.getItem('optAgentId')||'admin');}catch(e){}});};
   window.optRenderAgentsInSettings=optRenderAgentsInSettings;
-  window.optGoMyWorkspace=function(){pushNow(function(){ss.setItem('optAgentId','admin');ss.removeItem('optHydratedFor');boot();});};
+  window.optGoMyWorkspace=function(){pushNow(function(){window._optSwitching=true;ss.setItem('optAgentId','admin');ss.removeItem('optHydratedFor');boot();});};
   // ---- expose helpers for app-level features (sharing, ranking, role gating) ----
   window.optUser=user;
   window.optIsAdmin=function(){var u=user();return !!(u&&u.role==='admin');};

@@ -456,6 +456,11 @@ input[type="color"]{padding:4px}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button onclick="optAddAgent()" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;cursor:pointer">+ Add Agent</button><button onclick="optGoMyWorkspace()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">My Workspace</button></div>
           <div id="optAgentMgmtList"></div>
         </div>
+        <div style="border:1px solid #fde68a;background:#fffbeb;border-radius:14px;padding:16px;margin:14px 0">
+          <div style="font-weight:800;color:#92400e;margin-bottom:4px">🧹 Fix leaked data (one-time cleanup)</div>
+          <p style="font-size:12px;color:#78350f;margin:0 0 10px">Tanggalin ang dating na-leak na admin na Prospect/Recruit data sa LAHAT ng agents. Magsisimula silang malinis sa prospect/recruit. HINDI maaapektuhan ang ibang data nila (clients, atbp.).</p>
+          <button onclick="optPurgeAgentsProsRec()" style="padding:10px 16px;border:0;border-radius:10px;background:#d97706;color:#fff;font-weight:800;cursor:pointer">🧹 Clear Prospect/Recruit of ALL agents</button>
+        </div>
       </section>
       <section id="linkvault" class="app-section hidden">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
@@ -11337,6 +11342,25 @@ function optImportRecProsWorkbook(input){
       '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button onclick="document.getElementById(\'lvModal\').remove()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Cancel</button><button onclick="optLVSave(\''+(editing?esc(id):'')+'\')" class="opt-pill-green">💾 Save</button></div>'+
     '</div>';
     document.body.appendChild(m);m.addEventListener('click',function(e){if(e.target===m)m.remove();});
+  };
+  window.optPurgeAgentsProsRec=function(){
+    if(!(window.optIsAdmin&&window.optIsAdmin())){alert('Admin lang.');return;}
+    if(!confirm('Linisin ang na-leak na Prospect & Recruit data sa LAHAT ng agents?\n\nTatanggalin ang prospect/recruit entries ng bawat agent (dahil doon na-leak ang admin data). HINDI maaapektuhan ang ibang data nila. Hindi na maibabalik.'))return;
+    var PK='JOSH_PROSPECT_MONITORING_V1_PROSPECTS',GK='JOSH_PROSPECT_MONITORING_V1_GOALS',RK='optimumRecruitPipeline';
+    if(!window.optAuthFetch){alert('Hindi naka-login.');return;}
+    window.optAuthFetch('/api/agents').then(function(r){
+      var list=(r&&r.ok&&r.j&&r.j.agents)||[];if(!list.length){alert('Walang agents na nakita.');return;}
+      var i=0,done=0,errs=0;
+      (function next(){
+        if(i>=list.length){alert('Tapos ✓  Na-clear ang prospect/recruit ng '+done+' agent(s).'+(errs?('  ('+errs+' failed)'):''));return;}
+        var ag=list[i++];
+        window.optAuthFetch('/api/data?agentId='+encodeURIComponent(ag.id)).then(function(rr){
+          var keys=(rr&&rr.ok&&rr.j&&rr.j.data&&rr.j.data.keys)||{};
+          keys[PK]='[]';keys[GK]='[]';keys[RK]='[]';
+          window.optAuthFetch('/api/data',{method:'POST',body:JSON.stringify({agentId:ag.id,keys:keys})}).then(function(sr){if(sr&&sr.ok)done++;else errs++;next();}).catch(function(){errs++;next();});
+        }).catch(function(){errs++;next();});
+      })();
+    }).catch(function(e){alert('Failed: '+e.message);});
   };
   window.optLVSave=function(id){
     var g=function(i){var el=document.getElementById(i);return el?el.value.trim():'';};

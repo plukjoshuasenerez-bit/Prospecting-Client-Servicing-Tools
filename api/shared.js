@@ -3,6 +3,7 @@ const { auth, kvGet, kvSet, getUsers, dataKey, readBody, send } = require('./_li
 
 const SHARED_EVENTS_KEY = 'optimum:shared:events';
 const SHARED_BRANDING_KEY = 'optimum:shared:branding';
+const SHARED_LINKS_KEY = 'optimum:shared:links';
 const ALOG_KEY = 'optimumActivityLog';
 
 module.exports = async (req, res) => {
@@ -23,6 +24,12 @@ module.exports = async (req, res) => {
         let branding = null;
         if (raw) { try { branding = JSON.parse(raw); } catch (e) {} }
         return send(res, 200, { branding });
+      }
+      if (type === 'links') {
+        const raw = await kvGet(SHARED_LINKS_KEY);
+        let links = [];
+        if (raw) { try { links = JSON.parse(raw) || []; } catch (e) {} }
+        return send(res, 200, { links });
       }
       if (type === 'ranking') {
         const month = (req.query && req.query.month) || '';
@@ -67,6 +74,11 @@ module.exports = async (req, res) => {
         const branding = (b.branding && typeof b.branding === 'object') ? b.branding : {};
         await kvSet(SHARED_BRANDING_KEY, JSON.stringify(branding));
         return send(res, 200, { ok: true });
+      }
+      if ((b.type || type) === 'links') {
+        const links = Array.isArray(b.links) ? b.links : [];
+        await kvSet(SHARED_LINKS_KEY, JSON.stringify(links));
+        return send(res, 200, { ok: true, count: links.length });
       }
       return send(res, 400, { error: 'Unknown type' });
     }

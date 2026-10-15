@@ -524,6 +524,7 @@ function togglePassword(){
   e.title=show?'Hide password':'Show password';
 }
 function showPage(id,btn){
+  try{sessionStorage.setItem('optLastPage',id);}catch(e){}
   document.querySelectorAll('.app-section').forEach(x=>x.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
@@ -10729,6 +10730,12 @@ body.opt-ov #appPage{display:none!important}
           return c;}
         return e;});
       if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}}}).catch(function(){});}catch(e){}}
+  // Lightweight refresh of SHARED content (no page reload, no view jump) — so new trainings/links/birthdays
+  // appear without the user having to refresh the whole app.
+  window.optRefreshShared=function(){try{if(!tok())return;loadSharedEvents();}catch(e){}try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}try{if(window.optLoadBranding)window.optLoadBranding();}catch(e){}};
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){try{window.optRefreshShared();}catch(e){}}});
+  window.addEventListener('focus',function(){try{window.optRefreshShared();}catch(e){}});
+  setInterval(function(){try{if(document.visibilityState==='visible')window.optRefreshShared();}catch(e){}},45000);
   // ---- shared branding (admin sets; everyone sees) ----
   function applySharedBranding(b){if(!b)return;try{
     if(b.name){var tn=document.getElementById('topName');if(tn)tn.textContent=b.name;var st=document.getElementById('sideTitle');if(st)st.textContent=b.name;}
@@ -10778,8 +10785,8 @@ body.opt-ov #appPage{display:none!important}
     optLoadBranding();
     try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}
     try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}
-    // default view = Calendar on open
-    try{var _cal=document.querySelector('.nav-btn[data-page="calendar"]');if(_cal&&typeof showPage==='function')showPage('calendar',_cal);}catch(e){}
+    // restore the last page the user was on (not always Calendar) after a reload/sync
+    try{var _lp=ss.getItem('optLastPage');var _b=_lp?document.querySelector('.nav-btn[data-page="'+_lp+'"]'):null;if(!_b)_b=document.querySelector('.nav-btn[data-page="calendar"]');if(_b&&typeof _b.click==='function')_b.click();else if(typeof showPage==='function')showPage('calendar');}catch(e){}
     dirty=false;setSaveNote('');
     try{ss.setItem('optLoadedCanon',optCanon(snapshot()));}catch(e){}
   }

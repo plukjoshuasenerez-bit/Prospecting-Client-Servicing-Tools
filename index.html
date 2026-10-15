@@ -226,6 +226,7 @@ input[type="color"]{padding:4px}
       <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();">🧲 <span class="nav-label">Recruitment Tracker</span></button>
       <button class="nav-btn" data-page="clientref" onclick="showClientRef('clients',this)">📋 <span class="nav-label">Client &amp; Refresher</span></button>
       <button class="nav-btn opt-admin-only" data-page="agents" onclick="showPage('agents',this);try{optRenderAgentsInSettings&&optRenderAgentsInSettings();}catch(e){}">👥 <span class="nav-label">Agents</span></button>
+      <button class="nav-btn" data-page="linkvault" onclick="showPage('linkvault',this);try{optLVRender&&optLVRender();}catch(e){}">🔗 <span class="nav-label">Link Vault</span></button>
       <button class="nav-btn opt-settings-nav" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
     </aside>
     <div id="optDrawerBackdrop" class="opt-drawer-backdrop" onclick="optToggleDrawer(false)"></div>
@@ -351,33 +352,27 @@ input[type="color"]{padding:4px}
 <section id="customize" class="app-section hidden">
         <h1 class="page-title">Customize</h1>
         <p class="page-sub">I-personalize ang kulay at font mo — sa iyo lang ito.</p>
-        <div class="setting-card" id="optAppearanceCard" style="margin:14px 0;max-width:560px">
-          <h3>🎨 Color Way</h3>
-          <p style="font-size:12px;color:#666;margin:0 0 12px">I-personalize ang kulay at font — sa iyo lang ito, hindi sa ibang agents.</p>
-          <div style="font-weight:800;color:#475569;font-size:13px;margin:4px 0 8px;padding-bottom:6px;border-bottom:1px solid #eef2f7">🎨 Color Way — Apps</div>
-          <label>Primary Color</label>
-          <input id="myPrimary" type="color" value="#00AFC7" oninput="optPreviewAppearance()">
-          <label>Accent Color</label>
-          <input id="myAccent" type="color" value="#f5c542" oninput="optPreviewAppearance()">
-          <label>Font</label>
-          <select id="myFont" class="field" onchange="optPreviewAppearance()">
-            <option value="Arial,Helvetica,sans-serif">Default (Arial)</option>
-            <option value="'Inter',system-ui,sans-serif">Inter</option>
-            <option value="'Poppins',sans-serif">Poppins</option>
-            <option value="'Roboto',sans-serif">Roboto</option>
-            <option value="'Montserrat',sans-serif">Montserrat</option>
-            <option value="Georgia,'Times New Roman',serif">Georgia (Serif)</option>
-          </select>
-          <div style="font-weight:800;color:#475569;font-size:13px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid #eef2f7">🧭 Color Way — Side Bar</div>
-          <div id="mySidebarSwatches" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 4px">
-            <button type="button" class="opt-side-sw" data-bg="#ffffff" data-fg="#334155" onclick="optPickSidebar(this)" style="background:#fff;color:#334155;border:2px solid #e3e8ef">White</button>
-            <button type="button" class="opt-side-sw" data-bg="#151a21" data-fg="#dfe4eb" onclick="optPickSidebar(this)" style="background:#151a21;color:#fff">Dark</button>
-            <button type="button" class="opt-side-sw" data-bg="#0e3a47" data-fg="#d6f1f5" onclick="optPickSidebar(this)" style="background:#0e3a47;color:#fff">Teal</button>
-            <button type="button" class="opt-side-sw" data-bg="#3a0f1c" data-fg="#f7d9e0" onclick="optPickSidebar(this)" style="background:#3a0f1c;color:#fff">Maroon</button>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:16px">
-            <button onclick="optSaveAppearance()" style="padding:10px 18px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer">💾 Save Color Way</button>
-            <button onclick="optResetAppearance()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Reset</button>
+        <div class="setting-card" id="optAppearanceCard" style="margin:14px 0;max-width:100%">
+          <h3 style="margin:0 0 2px">🎨 Color Way</h3>
+          <p style="font-size:12px;color:#666;margin:0 0 12px">Kulay at font mo — sa iyo lang ito, hindi sa ibang agents.</p>
+          <div class="cw-row">
+            <div class="cw-group"><span class="cw-lbl">Primary</span><input id="myPrimary" type="color" value="#00AFC7" oninput="optPreviewAppearance()" class="cw-color"></div>
+            <div class="cw-group"><span class="cw-lbl">Accent</span><input id="myAccent" type="color" value="#f5c542" oninput="optPreviewAppearance()" class="cw-color"></div>
+            <div class="cw-group" style="min-width:150px"><span class="cw-lbl">Font</span><select id="myFont" class="field cw-font" onchange="optPreviewAppearance()">
+              <option value="Arial,Helvetica,sans-serif">Default (Arial)</option>
+              <option value="'Inter',system-ui,sans-serif">Inter</option>
+              <option value="'Poppins',sans-serif">Poppins</option>
+              <option value="'Roboto',sans-serif">Roboto</option>
+              <option value="'Montserrat',sans-serif">Montserrat</option>
+              <option value="Georgia,'Times New Roman',serif">Georgia</option>
+            </select></div>
+            <div class="cw-group"><span class="cw-lbl">Side Bar</span><div id="mySidebarSwatches" style="display:flex;gap:6px;flex-wrap:wrap">
+              <button type="button" class="opt-side-sw" data-bg="#ffffff" data-fg="#334155" onclick="optPickSidebar(this)" style="background:#fff;color:#334155;border:2px solid #e3e8ef">White</button>
+              <button type="button" class="opt-side-sw" data-bg="#151a21" data-fg="#dfe4eb" onclick="optPickSidebar(this)" style="background:#151a21;color:#fff">Dark</button>
+              <button type="button" class="opt-side-sw" data-bg="#0e3a47" data-fg="#d6f1f5" onclick="optPickSidebar(this)" style="background:#0e3a47;color:#fff">Teal</button>
+              <button type="button" class="opt-side-sw" data-bg="#3a0f1c" data-fg="#f7d9e0" onclick="optPickSidebar(this)" style="background:#3a0f1c;color:#fff">Maroon</button>
+            </div></div>
+            <div class="cw-group" style="margin-left:auto;align-self:flex-end"><span class="cw-lbl" style="visibility:hidden">Save</span><div style="display:flex;gap:8px"><button onclick="optSaveAppearance()" style="padding:9px 16px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap">💾 Save</button><button onclick="optResetAppearance()" style="padding:9px 14px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Reset</button></div></div>
           </div>
         </div>
         <div class="opt-admin-only" style="display:none;border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
@@ -461,6 +456,19 @@ input[type="color"]{padding:4px}
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button onclick="optAddAgent()" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;cursor:pointer">+ Add Agent</button><button onclick="optGoMyWorkspace()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">My Workspace</button></div>
           <div id="optAgentMgmtList"></div>
         </div>
+      </section>
+      <section id="linkvault" class="app-section hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+          <div><h1 class="page-title" style="margin:0">🔗 Link Vault</h1><p class="page-sub" style="margin:2px 0 0">Sentralisadong library ng mahahalagang links, apps, at dashboards.</p></div>
+          <button class="opt-pill-green" onclick="optLVOpenModal()">＋ Add New Link</button>
+        </div>
+        <div class="lv-toolbar">
+          <input id="lvSearch" class="lv-search" placeholder="🔍 Search by app name or description..." oninput="optLVRender()">
+          <select id="lvCatFilter" class="lv-select" onchange="optLVRender()"><option value="">All Categories</option></select>
+          <button id="lvSortBtn" class="lv-select" style="cursor:pointer" onclick="optLVToggleSort()">↕ Sort A–Z</button>
+        </div>
+        <div id="lvGrid" class="lv-grid"></div>
+        <div id="lvEmpty" class="lv-empty" style="display:none"><div class="lv-empty-ic">🔗</div><h3>Wala pang naka-save na link</h3><p>Simulan ang iyong vault — mag-add ng unang link.</p><button class="opt-pill-green" onclick="optLVOpenModal()">＋ Add New Link</button></div>
       </section>
     </main>
   </div>
@@ -10767,6 +10775,7 @@ body.opt-ov #appPage{display:none!important}
     if(u&&u.role==='admin'){renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
     loadSharedEvents();
     optLoadBranding();
+    try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}
     try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}
     // default view = Calendar on open
     try{var _cal=document.querySelector('.nav-btn[data-page="calendar"]');if(_cal&&typeof showPage==='function')showPage('calendar',_cal);}catch(e){}
@@ -11131,6 +11140,13 @@ body.opt-ov #appPage{display:none!important}
 </script>
 <style>
 .opt-side-sw{padding:8px 14px;border-radius:9px;border:2px solid transparent;font-weight:700;font-size:13px;cursor:pointer}
+.cw-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px}
+.cw-group{display:flex;flex-direction:column;gap:5px}
+.cw-lbl{font-size:11px;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.3px}
+.cw-color{width:58px;height:38px;padding:2px;border:1px solid #e3e8ef;border-radius:8px;cursor:pointer;background:#fff}
+.cw-font{margin:0!important;height:38px;padding:6px 10px}
+#optAppearanceCard .opt-side-sw{padding:7px 11px;font-size:12px}
+@media(max-width:620px){.cw-row{gap:10px}.cw-group[style*="margin-left"]{margin-left:0!important;width:100%}}
 .opt-side-sw.sel{outline:3px solid var(--primary);outline-offset:1px}
 </style>
 <script>
@@ -11214,6 +11230,125 @@ function optImportRecProsWorkbook(input){
   input.value='';};
   r.readAsArrayBuffer(file);
 }
+</script>
+<style>
+.lv-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+.lv-search{flex:1;min-width:200px;padding:11px 14px;border:1px solid #e3e8ef;border-radius:12px;font-size:14px}
+.lv-select{padding:11px 14px;border:1px solid #e3e8ef;border-radius:12px;font-size:14px;background:#fff;color:#334155;font-weight:600}
+.lv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.lv-card{position:relative;background:#fff;border:1px solid #eef2f7;border-radius:18px;padding:22px 14px 16px;text-align:center;cursor:pointer;box-shadow:0 4px 14px rgba(16,24,40,.06);transition:transform .16s ease,box-shadow .16s ease}
+.lv-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(16,24,40,.14)}
+.lv-ic{width:64px;height:64px;border-radius:17px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:31px;box-shadow:0 10px 20px rgba(16,24,40,.22),inset 0 2px 3px rgba(255,255,255,.55),inset 0 -3px 6px rgba(0,0,0,.12)}
+.lv-ic img{width:100%;height:100%;object-fit:cover;border-radius:17px}
+.lv-name{font-weight:800;font-size:15px;color:#0f172a;margin:0 0 5px;word-break:break-word;line-height:1.2}
+.lv-badge{display:inline-block;font-size:10px;font-weight:800;padding:2px 9px;border-radius:99px;background:#eef2ff;color:#4338ca;margin-bottom:7px}
+.lv-desc{font-size:12px;color:#64748b;line-height:1.35;max-height:48px;overflow:hidden}
+.lv-dots{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;border:0;background:rgba(241,245,249,.9);cursor:pointer;font-size:16px;color:#64748b;display:none;line-height:1}
+.lv-card:hover .lv-dots{display:block}
+.lv-tag{position:absolute;top:8px;left:8px;font-size:9px;font-weight:800;padding:2px 7px;border-radius:99px}
+.lv-tag.own{background:#dcfce7;color:#166534}.lv-tag.shared{background:#dbeafe;color:#1d4ed8}
+.lv-ctx{position:fixed;z-index:100001;background:#fff;border-radius:12px;box-shadow:0 14px 38px rgba(0,0,0,.28);padding:6px;min-width:172px}
+.lv-ctx button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:600;color:#1f2937;font-size:14px}
+.lv-ctx button:hover{background:#f1f5f9}.lv-ctx button.danger{color:#dc2626}
+.lv-empty{text-align:center;padding:50px 20px;color:#64748b}.lv-empty-ic{font-size:46px;margin-bottom:8px}.lv-empty h3{margin:0 0 6px;color:#334155}
+.lv-iconpick{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:6px 0 4px}
+.lv-iconopt{height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:23px;cursor:pointer;border:3px solid transparent;box-shadow:0 6px 14px rgba(16,24,40,.18),inset 0 1px 2px rgba(255,255,255,.5)}
+.lv-iconopt.sel{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,175,199,.3)}
+.lv-mback{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100000;display:flex;align-items:flex-start;justify-content:center;padding:28px 14px;overflow:auto}
+.lv-mbox{background:#fff;border-radius:18px;max-width:460px;width:100%;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.lv-mbox label{display:block;font-size:12px;font-weight:800;color:#475569;margin:12px 0 5px}
+.lv-mbox input[type=text],.lv-mbox input[type=url],.lv-mbox textarea,.lv-mbox select{width:100%;padding:10px 12px;border:1px solid #e3e8ef;border-radius:10px;font-size:14px;font-family:inherit}
+@media(max-width:600px){.lv-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}.lv-dots{display:block}}
+</style>
+<script>
+/* ===== Link Vault: shared admin links (agents read-only) + private agent links ===== */
+(function(){
+  var LV_ICONS={globe:{e:'🌐',g:'linear-gradient(135deg,#4facfe,#00c6fb)'},analytics:{e:'📊',g:'linear-gradient(135deg,#43e97b,#38f9d7)'},briefcase:{e:'💼',g:'linear-gradient(135deg,#fa709a,#fee140)'},users:{e:'👥',g:'linear-gradient(135deg,#667eea,#764ba2)'},cloud:{e:'☁️',g:'linear-gradient(135deg,#6a9cff,#8fd3f4)'},folder:{e:'📁',g:'linear-gradient(135deg,#f6d365,#fda085)'},link:{e:'🔗',g:'linear-gradient(135deg,#30cfd0,#5b86e5)'},calendar:{e:'📅',g:'linear-gradient(135deg,#ff9a9e,#f6416c)'},chat:{e:'💬',g:'linear-gradient(135deg,#5ee7df,#9b7bd4)'},shield:{e:'🛡️',g:'linear-gradient(135deg,#f093fb,#f5576c)'}};
+  var LV_ORDER=['globe','analytics','briefcase','users','cloud','folder','link','calendar','chat','shield'];
+  var OWN_KEY='optimumMyLinks';
+  var lvSortAZ=false, lvPick={icon:'globe',iconData:''};
+  function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function getOwn(){try{return JSON.parse(localStorage.getItem(OWN_KEY)||'[]')||[];}catch(e){return [];}}
+  function saveOwn(a){try{localStorage.setItem(OWN_KEY,JSON.stringify(a));}catch(e){}try{if(window.optPushNow)window.optPushNow();}catch(e){}}
+  window.optSharedLinks=window.optSharedLinks||[];
+  window.optLVLoadShared=function(cb){try{if(!window.optAuthFetch){cb&&cb();return;}window.optAuthFetch('/api/shared?type=links').then(function(r){if(r&&r.ok){window.optSharedLinks=(r.j&&r.j.links)||[];}cb&&cb();try{optLVRender();}catch(e){}}).catch(function(){cb&&cb();});}catch(e){cb&&cb();}};
+  function pushShared(){return window.optAuthFetch('/api/shared?type=links',{method:'POST',body:JSON.stringify({type:'links',links:window.optSharedLinks})});}
+  function iconHtml(l){var sz='';if(l.iconData){return '<div class="lv-ic" style="background:#fff"><img src="'+l.iconData+'" alt=""></div>';}var ic=LV_ICONS[l.icon]||LV_ICONS.link;return '<div class="lv-ic" style="background:'+ic.g+'">'+ic.e+'</div>';}
+  function allLinks(){var sh=(window.optSharedLinks||[]).map(function(l){var c={};for(var k in l)c[k]=l[k];c._shared=true;return c;});var ow=getOwn().map(function(l){var c={};for(var k in l)c[k]=l[k];c._own=true;return c;});return sh.concat(ow);}
+  function canEdit(l){return !!(l._own||(l._shared&&isAdmin()));}
+  window.optLVToggleSort=function(){lvSortAZ=!lvSortAZ;var b=document.getElementById('lvSortBtn');if(b)b.textContent=lvSortAZ?'↕ Sorted A–Z':'↕ Sort A–Z';optLVRender();};
+  window.optLVRender=function(){
+    var grid=document.getElementById('lvGrid');if(!grid)return;
+    var q=((document.getElementById('lvSearch')||{}).value||'').toLowerCase().trim();
+    var cat=(document.getElementById('lvCatFilter')||{}).value||'';
+    var all=allLinks();
+    // category filter options
+    var cats={};all.forEach(function(l){if(l.category)cats[l.category]=1;});
+    var sel=document.getElementById('lvCatFilter');if(sel){var cur=sel.value;sel.innerHTML='<option value="">All Categories</option>'+Object.keys(cats).sort().map(function(c){return '<option value="'+esc(c)+'">'+esc(c)+'</option>';}).join('');sel.value=cur;}
+    var list=all.filter(function(l){if(cat&&l.category!==cat)return false;if(q){var hay=((l.name||'')+' '+(l.description||'')+' '+(l.category||'')).toLowerCase();if(hay.indexOf(q)<0)return false;}return true;});
+    if(lvSortAZ)list.sort(function(a,b){return String(a.name||'').localeCompare(String(b.name||''));});
+    var empty=document.getElementById('lvEmpty');
+    if(!list.length){grid.innerHTML='';if(empty)empty.style.display=all.length?'none':'';if(all.length)grid.innerHTML='<div class="lv-empty" style="grid-column:1/-1"><div class="lv-empty-ic">🔍</div><h3>Walang tugma</h3><p>Subukan ang ibang search o category.</p></div>';return;}
+    if(empty)empty.style.display='none';
+    grid.innerHTML=list.map(function(l){var tag=l._own?'<span class="lv-tag own">Mine</span>':'<span class="lv-tag shared">Shared</span>';
+      return '<div class="lv-card" data-id="'+esc(l.id)+'" data-own="'+(l._own?1:0)+'" onclick="optLVOpen(\''+esc(l.id)+'\',event)" oncontextmenu="optLVMenu(event,\''+esc(l.id)+'\');return false;">'+tag+'<button class="lv-dots" onclick="optLVMenu(event,\''+esc(l.id)+'\');event.stopPropagation();">⋮</button>'+iconHtml(l)+'<div class="lv-name">'+esc(l.name||'Untitled')+'</div>'+(l.category?'<span class="lv-badge">'+esc(l.category)+'</span>':'')+(l.description?'<div class="lv-desc">'+esc(l.description)+'</div>':'')+'</div>';}).join('');
+  };
+  function findLink(id){var a=allLinks();return a.filter(function(l){return String(l.id)===String(id);})[0];}
+  window.optLVOpen=function(id,ev){if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.lv-dots'))return;var l=findLink(id);if(l&&l.url){window.open(l.url,'_blank','noopener');}};
+  window.optLVMenu=function(ev,id){ev.preventDefault();ev.stopPropagation();lvCloseMenu();var l=findLink(id);if(!l)return;var m=document.createElement('div');m.className='lv-ctx';m.id='lvCtx';
+    var items='<button onclick="optLVCopy(\''+esc(id)+'\')">📋 Copy Link</button><button onclick="optLVOpenUrl(\''+esc(id)+'\')">↗ Open</button>';
+    if(canEdit(l)){items+='<button onclick="optLVOpenModal(\''+esc(id)+'\')">✎ Edit</button><button class="danger" onclick="optLVDelete(\''+esc(id)+'\')">🗑 Delete</button>';}
+    m.innerHTML=items;document.body.appendChild(m);var x=ev.clientX||0,y=ev.clientY||0;var w=180,h=m.offsetHeight||160;if(x+w>window.innerWidth)x=window.innerWidth-w-8;if(y+h>window.innerHeight)y=window.innerHeight-h-8;m.style.left=x+'px';m.style.top=y+'px';};
+  function lvCloseMenu(){var m=document.getElementById('lvCtx');if(m)m.remove();}
+  document.addEventListener('click',lvCloseMenu);document.addEventListener('scroll',lvCloseMenu,true);
+  window.optLVCopy=function(id){var l=findLink(id);if(!l)return;try{navigator.clipboard.writeText(l.url||'');alert('Na-copy ang link ✓');}catch(e){var t=document.createElement('textarea');t.value=l.url||'';document.body.appendChild(t);t.select();try{document.execCommand('copy');}catch(e2){}t.remove();alert('Na-copy ang link ✓');}lvCloseMenu();};
+  window.optLVOpenUrl=function(id){var l=findLink(id);if(l&&l.url)window.open(l.url,'_blank','noopener');lvCloseMenu();};
+  window.optLVDelete=function(id){lvCloseMenu();var l=findLink(id);if(!l||!canEdit(l))return;if(!confirm('Burahin ang link na "'+(l.name||'')+'"?'))return;
+    if(l._own){saveOwn(getOwn().filter(function(x){return String(x.id)!==String(id);}));optLVRender();}
+    else if(l._shared&&isAdmin()){window.optSharedLinks=(window.optSharedLinks||[]).filter(function(x){return String(x.id)!==String(id);});pushShared().then(function(){optLVRender();});}
+  };
+  window.optLVPickIcon=function(k,el){lvPick.icon=k;lvPick.iconData='';try{document.querySelectorAll('.lv-iconopt').forEach(function(b){b.classList.remove('sel');});}catch(e){}if(el)el.classList.add('sel');var pv=document.getElementById('lvUploadPrev');if(pv)pv.innerHTML='';};
+  window.optLVUploadIcon=function(input){var f=input&&input.files&&input.files[0];if(!f)return;if(f.size>400000){alert('Masyadong malaki ang icon (max ~400KB).');input.value='';return;}var r=new FileReader();r.onload=function(e){lvPick.iconData=e.target.result;lvPick.icon='upload';try{document.querySelectorAll('.lv-iconopt').forEach(function(b){b.classList.remove('sel');});}catch(e2){}var pv=document.getElementById('lvUploadPrev');if(pv)pv.innerHTML='<img src="'+lvPick.iconData+'" style="width:46px;height:46px;border-radius:12px;object-fit:cover;box-shadow:0 4px 10px rgba(0,0,0,.2)"> <span style="font-size:12px;color:#16a34a;font-weight:700">Custom icon ✓</span>';};r.readAsDataURL(f);};
+  window.optLVOpenModal=function(id){
+    var editing=id?findLink(id):null;
+    if(editing&&!canEdit(editing)){alert('Hindi mo pwedeng i-edit ang shared na link na ito.');return;}
+    lvPick={icon:(editing&&editing.icon)||'globe',iconData:(editing&&editing.iconData)||''};
+    var old=document.getElementById('lvModal');if(old)old.remove();
+    var m=document.createElement('div');m.className='lv-mback';m.id='lvModal';
+    var cats={};allLinks().forEach(function(l){if(l.category)cats[l.category]=1;});
+    var iconsHtml=LV_ORDER.map(function(k){var ic=LV_ICONS[k];var sel=(!lvPick.iconData&&lvPick.icon===k)?' sel':'';return '<div class="lv-iconopt'+sel+'" title="'+k+'" style="background:'+ic.g+'" onclick="optLVPickIcon(\''+k+'\',this)">'+ic.e+'</div>';}).join('');
+    m.innerHTML='<div class="lv-mbox"><div style="display:flex;align-items:center;justify-content:space-between"><h2 style="margin:0;font-size:19px">'+(editing?'Edit Link':'Add New Link')+'</h2><button onclick="document.getElementById(\'lvModal\').remove()" style="border:0;background:none;font-size:22px;cursor:pointer;color:#64748b">×</button></div>'+
+      '<label>App Name *</label><input type="text" id="lvName" value="'+esc(editing?editing.name:'')+'" placeholder="e.g. Pru Portal">'+
+      '<label>Link (URL) *</label><input type="url" id="lvUrl" value="'+esc(editing?editing.url:'')+'" placeholder="https://...">'+
+      '<label>Category</label><input type="text" id="lvCat" list="lvCatList" value="'+esc(editing?editing.category:'')+'" placeholder="Select or create..."><datalist id="lvCatList">'+Object.keys(cats).map(function(c){return '<option value="'+esc(c)+'">';}).join('')+'</datalist>'+
+      '<label>Icon — pumili ng 3D icon o mag-upload</label><div class="lv-iconpick">'+iconsHtml+'</div>'+
+      '<div style="display:flex;align-items:center;gap:10px;margin:4px 0"><label style="display:inline-flex;align-items:center;gap:7px;margin:0;padding:8px 12px;border:1px dashed #cbd5e1;border-radius:10px;cursor:pointer;font-weight:700;color:#475569">⬆ Upload icon<input type="file" accept="image/*" style="display:none" onchange="optLVUploadIcon(this)"></label><span id="lvUploadPrev">'+(editing&&editing.iconData?'<img src="'+esc(editing.iconData)+'" style="width:46px;height:46px;border-radius:12px;object-fit:cover"> <span style="font-size:12px;color:#16a34a;font-weight:700">Custom icon ✓</span>':'')+'</span></div>'+
+      '<label>Description</label><textarea id="lvDesc" rows="3" placeholder="Short explanation...">'+esc(editing?editing.description:'')+'</textarea>'+
+      '<div style="font-size:11px;color:#94a3b8;margin-top:8px">'+(isAdmin()?'🌐 Bilang admin, makikita ng LAHAT ng agents ang link na ito.':'🔒 Pribado ito — ikaw lang ang makakakita.')+'</div>'+
+      '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button onclick="document.getElementById(\'lvModal\').remove()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Cancel</button><button onclick="optLVSave(\''+(editing?esc(id):'')+'\')" class="opt-pill-green">💾 Save</button></div>'+
+    '</div>';
+    document.body.appendChild(m);m.addEventListener('click',function(e){if(e.target===m)m.remove();});
+  };
+  window.optLVSave=function(id){
+    var g=function(i){var el=document.getElementById(i);return el?el.value.trim():'';};
+    var name=g('lvName'),url=g('lvUrl'),cat=g('lvCat'),desc=g('lvDesc');
+    if(!name){alert('App Name muna.');return;}
+    if(!url){alert('Link (URL) muna.');return;}
+    if(!/^https?:\/\//i.test(url))url='https://'+url;
+    try{new URL(url);}catch(e){alert('Hindi valid ang URL.');return;}
+    var editing=id?findLink(id):null;
+    var now=new Date().toISOString();
+    var rec={id:(editing?editing.id:('lv'+Date.now()+Math.random().toString(36).slice(2,6))),name:name,url:url,category:cat,icon:(lvPick.iconData?'upload':lvPick.icon),iconData:lvPick.iconData||'',description:desc,createdAt:(editing&&editing.createdAt)?editing.createdAt:now,updatedAt:now};
+    var toShared=editing?!!editing._shared:isAdmin();
+    if(toShared){
+      var arr=(window.optSharedLinks||[]).slice();var ix=arr.findIndex(function(x){return String(x.id)===String(rec.id);});if(ix>=0)arr[ix]=rec;else arr.push(rec);window.optSharedLinks=arr;
+      pushShared().then(function(r){if(r&&r.ok){var md=document.getElementById('lvModal');if(md)md.remove();optLVRender();}else alert('Save failed: '+((r&&r.j&&r.j.error)||'error'));}).catch(function(e){alert('Save failed: '+e.message);});
+    }else{
+      var own=getOwn();var oi=own.findIndex(function(x){return String(x.id)===String(rec.id);});if(oi>=0)own[oi]=rec;else own.push(rec);saveOwn(own);var md2=document.getElementById('lvModal');if(md2)md2.remove();optLVRender();
+    }
+  };
+})();
 </script>
 </body>
 </html>

@@ -4,6 +4,7 @@ const { auth, kvGet, kvSet, getUsers, dataKey, readBody, send } = require('./_li
 const SHARED_EVENTS_KEY = 'optimum:shared:events';
 const SHARED_BRANDING_KEY = 'optimum:shared:branding';
 const SHARED_LINKS_KEY = 'optimum:shared:links';
+const SHARED_PURGE_KEY = 'optimum:shared:purge';
 const ALOG_KEY = 'optimumActivityLog';
 
 module.exports = async (req, res) => {
@@ -30,6 +31,12 @@ module.exports = async (req, res) => {
         let links = [];
         if (raw) { try { links = JSON.parse(raw) || []; } catch (e) {} }
         return send(res, 200, { links });
+      }
+      if (type === 'purge') {
+        const raw = await kvGet(SHARED_PURGE_KEY);
+        let token = 0;
+        if (raw) { try { token = JSON.parse(raw).token || 0; } catch (e) {} }
+        return send(res, 200, { token });
       }
       if (type === 'ranking') {
         const month = (req.query && req.query.month) || '';
@@ -79,6 +86,11 @@ module.exports = async (req, res) => {
         const links = Array.isArray(b.links) ? b.links : [];
         await kvSet(SHARED_LINKS_KEY, JSON.stringify(links));
         return send(res, 200, { ok: true, count: links.length });
+      }
+      if ((b.type || type) === 'purge') {
+        const token = Number(b.token) || Date.now();
+        await kvSet(SHARED_PURGE_KEY, JSON.stringify({ token: token }));
+        return send(res, 200, { ok: true, token: token });
       }
       return send(res, 400, { error: 'Unknown type' });
     }

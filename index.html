@@ -10737,7 +10737,24 @@ body.opt-ov #appPage{display:none!important}
       if(typeof renderCalendar==='function'){try{renderCalendar();}catch(e){}}}}).catch(function(){});}catch(e){}}
   // Lightweight refresh of SHARED content (no page reload, no view jump) — so new trainings/links/birthdays
   // appear without the user having to refresh the whole app.
-  window.optRefreshShared=function(){try{if(!tok())return;loadSharedEvents();}catch(e){}try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}try{if(window.optLoadBranding)window.optLoadBranding();}catch(e){}};
+  window.optRefreshShared=function(){try{if(!tok())return;loadSharedEvents();}catch(e){}try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}try{if(window.optLoadBranding)window.optLoadBranding();}catch(e){}try{if(window.optApplyPurgeIfNeeded)window.optApplyPurgeIfNeeded();}catch(e){}};
+  // Agent-side self-heal: when admin broadcasts a purge token, each AGENT clears its own cached
+  // prospect/recruit (local + cloud) so previously-leaked admin data disappears without manual steps.
+  window.optApplyPurgeIfNeeded=function(){try{
+    if(!tok())return;var u=user();if(!u||u.role!=='agent')return; // admin keeps own data
+    authFetch('/api/shared?type=purge').then(function(r){
+      if(!r||!r.ok||!r.j)return;var token=Number(r.j.token)||0;if(!token)return;
+      var applied=0;try{applied=Number(localStorage.getItem('optAppliedPurge'))||0;}catch(e){}
+      if(token<=applied)return;
+      var removed=0;var RX=/prospect|recruit/i;
+      try{for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);if(k&&RX.test(k)){localStorage.removeItem(k);removed++;}}}catch(e){}
+      try{localStorage.setItem('optAppliedPurge',String(token));}catch(e){}
+      try{if(typeof prospects!=='undefined')prospects.length=0;}catch(e){}
+      try{if(window.renderProspectTracker)renderProspectTracker();}catch(e){}
+      try{if(window.recRenderTabs)recRenderTabs();if(window.recRender)recRender();}catch(e){}
+      try{if(window.optPushNow)window.optPushNow();}catch(e){}
+    }).catch(function(){});
+  }catch(e){}};
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){try{window.optRefreshShared();}catch(e){}}});
   window.addEventListener('focus',function(){try{window.optRefreshShared();}catch(e){}});
   setInterval(function(){try{if(document.visibilityState==='visible')window.optRefreshShared();}catch(e){}},45000);
@@ -10789,6 +10806,7 @@ body.opt-ov #appPage{display:none!important}
     loadSharedEvents();
     optLoadBranding();
     try{if(window.optLVLoadShared)window.optLVLoadShared();}catch(e){}
+    try{if(window.optApplyPurgeIfNeeded)window.optApplyPurgeIfNeeded();}catch(e){}
     try{if(window.optLoadAgentBirthdays)window.optLoadAgentBirthdays();}catch(e){}
     // restore the last page the user was on (not always Calendar) after a reload/sync
     try{var _lp=ss.getItem('optLastPage');var _b=_lp?document.querySelector('.nav-btn[data-page="'+_lp+'"]'):null;if(!_b)_b=document.querySelector('.nav-btn[data-page="calendar"]');if(_b&&typeof _b.click==='function')_b.click();else if(typeof showPage==='function')showPage('calendar');}catch(e){}
@@ -11352,7 +11370,10 @@ function optImportRecProsWorkbook(input){
       var list=(r&&r.ok&&r.j&&r.j.agents)||[];if(!list.length){alert('Walang agents na nakita.');return;}
       var i=0,done=0,errs=0,totalRemoved=0;
       (function next(){
-        if(i>=list.length){alert('Tapos ✓  Na-clear ang '+totalRemoved+' prospect/recruit record(s) sa '+done+' agent(s).'+(errs?('  ('+errs+' failed)'):'')+'\n\nPa-hard-refresh ang mga agent para mawala na sa kanila.');return;}
+        if(i>=list.length){
+          // broadcast a purge token so every agent auto-clears their LOCAL cached prospect/recruit too (no re-upload of old data)
+          try{window.optAuthFetch('/api/shared?type=purge',{method:'POST',body:JSON.stringify({type:'purge',token:Date.now()})});}catch(e){}
+          alert('Tapos ✓  Na-clear ang '+totalRemoved+' prospect/recruit record(s) sa '+done+' agent(s).'+(errs?('  ('+errs+' failed)'):'')+'\n\nAutomatic nang maglilinis ang bawat agent sa susunod nilang pag-bukas ng app — hindi na kailangang mano-manong burahin.');return;}
         var ag=list[i++];
         window.optAuthFetch('/api/data?agentId='+encodeURIComponent(ag.id)).then(function(rr){
           var keys=(rr&&rr.ok&&rr.j&&rr.j.data&&rr.j.data.keys)||{};

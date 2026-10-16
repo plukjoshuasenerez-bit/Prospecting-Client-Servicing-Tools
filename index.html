@@ -11346,17 +11346,17 @@ function optImportRecProsWorkbook(input){
   window.optPurgeAgentsProsRec=function(){
     if(!(window.optIsAdmin&&window.optIsAdmin())){alert('Admin lang.');return;}
     if(!confirm('Linisin ang na-leak na Prospect & Recruit data sa LAHAT ng agents?\n\nTatanggalin ang prospect/recruit entries ng bawat agent (dahil doon na-leak ang admin data). HINDI maaapektuhan ang ibang data nila. Hindi na maibabalik.'))return;
-    var PK='JOSH_PROSPECT_MONITORING_V1_PROSPECTS',GK='JOSH_PROSPECT_MONITORING_V1_GOALS',RK='optimumRecruitPipeline';
     if(!window.optAuthFetch){alert('Hindi naka-login.');return;}
+    var RX=/prospect|recruit/i;
     window.optAuthFetch('/api/agents').then(function(r){
       var list=(r&&r.ok&&r.j&&r.j.agents)||[];if(!list.length){alert('Walang agents na nakita.');return;}
-      var i=0,done=0,errs=0;
+      var i=0,done=0,errs=0,totalRemoved=0;
       (function next(){
-        if(i>=list.length){alert('Tapos ✓  Na-clear ang prospect/recruit ng '+done+' agent(s).'+(errs?('  ('+errs+' failed)'):''));return;}
+        if(i>=list.length){alert('Tapos ✓  Na-clear ang '+totalRemoved+' prospect/recruit record(s) sa '+done+' agent(s).'+(errs?('  ('+errs+' failed)'):'')+'\n\nPa-hard-refresh ang mga agent para mawala na sa kanila.');return;}
         var ag=list[i++];
         window.optAuthFetch('/api/data?agentId='+encodeURIComponent(ag.id)).then(function(rr){
           var keys=(rr&&rr.ok&&rr.j&&rr.j.data&&rr.j.data.keys)||{};
-          keys[PK]='[]';keys[GK]='[]';keys[RK]='[]';
+          Object.keys(keys).forEach(function(k){if(RX.test(k)){delete keys[k];totalRemoved++;}});
           window.optAuthFetch('/api/data',{method:'POST',body:JSON.stringify({agentId:ag.id,keys:keys})}).then(function(sr){if(sr&&sr.ok)done++;else errs++;next();}).catch(function(){errs++;next();});
         }).catch(function(){errs++;next();});
       })();

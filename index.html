@@ -10636,6 +10636,7 @@ body.opt-ov #appPage{display:none!important}
       '<div class="optaa-grid">'+
         '<div class="optaa-f full"><label>Full Name *</label><input id="aaName" placeholder="Agent full name" value="'+(isEdit?ev(existing.name):'')+'"></div>'+
         '<div class="optaa-f"><label>Username *</label><input id="aaUser" placeholder="para sa login" value="'+(isEdit?ev(existing.username):'')+'"></div>'+
+        '<div class="optaa-f"><label>🆔 Agent Code</label><input id="aaCode" placeholder="hal. AG-001" value="'+(isEdit?ev(existing.code):'')+'"></div>'+
         '<div class="optaa-f"><label>Password '+(isEdit?'(iwan blanko kung di babaguhin)':'*')+'</label><input id="aaPass" placeholder="'+(isEdit?'bagong password':'password')+'"></div>'+
         '<div class="optaa-f"><label>Status</label><select id="aaStatus"><option value="">—</option><option value="Fulltime">Fulltime</option><option value="Parttime">Parttime</option></select></div>'+
         '<div class="optaa-f"><label>Date Coded</label><input id="aaDate" type="date" value="'+(isEdit?ev(existing.dateCoded):'')+'"></div>'+
@@ -10656,7 +10657,7 @@ body.opt-ov #appPage{display:none!important}
       var btn=document.getElementById('optaaSave');
       if(isEdit){
         if(!name||!username){alert('Name at Username kailangan.');return;}
-        var pl={id:existing.id,name:name,username:username,status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
+        var pl={id:existing.id,name:name,username:username,code:g('aaCode'),status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
           licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
         if(password)pl.password=password;
         btn.disabled=true;btn.textContent='Saving…';
@@ -10667,7 +10668,7 @@ body.opt-ov #appPage{display:none!important}
         return;
       }
       if(!name||!username||!password){alert('Name, Username, Password kailangan.');return;}
-      var payload={name:name,username:username,password:password,status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
+      var payload={name:name,username:username,password:password,code:g('aaCode'),status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
         licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
       btn.disabled=true;btn.textContent='Adding…';
       API.addAgent(payload).then(function(r){
@@ -10692,20 +10693,30 @@ body.opt-ov #appPage{display:none!important}
   function optLicenseLabel(v,l){if(v&&l)return 'Dual License';if(v)return 'Variable';if(l)return 'Life';return '';}
   window.optTenure=optTenure; window.optLicenseLabel=optLicenseLabel;
   function openAgent(aid){pushNow(function(){window._optSwitching=true;ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();});}
-  function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}var list=r.j.agents||[];var cur=ss.getItem('optAgentId')||'admin';
-    window._optAgentsCache=list;
-    if(!list.length){box.innerHTML='<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';return;}
-    box.innerHTML=list.map(function(a){
+  function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}window._optAgentsCache=r.j.agents||[];optPaintAgents();});}
+  function optPaintAgents(){
+    var box=document.getElementById('optAgentMgmtList');if(!box)return;
+    var list=window._optAgentsCache||[];var cur=ss.getItem('optAgentId')||'admin';
+    var q=String(window._optAgentSearch||'').trim().toLowerCase();
+    var search='<input id="optAgentSearch" placeholder="🔎 Hanapin by name o Agent Code…" value="'+String(window._optAgentSearch||'').replace(/"/g,'&quot;')+'" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:10px;font-weight:700;font-family:inherit">';
+    var fl=list.filter(function(a){if(!q)return true;return (String(a.name||'').toLowerCase().indexOf(q)>=0)||(String(a.code||'').toLowerCase().indexOf(q)>=0)||(String(a.username||'').toLowerCase().indexOf(q)>=0);});
+    var cards;
+    if(!list.length){cards='<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';}
+    else if(!fl.length){cards='<p style="color:#64748b;padding:8px">Walang tugma sa paghahanap.</p>';}
+    else{cards=fl.map(function(a){
       var ten=optTenure(a.dateCoded),lic=optLicenseLabel(a.licVariable,a.licLife),chips='';
+      if(a.code)chips+='<span class="optam-chip code" style="background:#eef4ff;color:#1d4ed8">🆔 '+esc(a.code)+'</span>';
       if(a.status)chips+='<span class="optam-chip st-'+String(a.status).toLowerCase()+'">'+esc(a.status)+'</span>';
       if(ten)chips+='<span class="optam-chip ten">'+esc(ten)+'</span>';
       if(lic)chips+='<span class="optam-chip lic">'+esc(lic)+'</span>';
-      if(a.birthday)chips+='<span class="optam-chip bday">🎂 '+esc(a.birthday)+'</span>';
       if(a.dateCoded)chips+='<span class="optam-chip date">Coded '+esc(a.dateCoded)+'</span>';
       if(a.birthday)chips+='<span class="optam-chip bday">🎂 '+esc(a.birthday)+'</span>';
-      return '<div class="optam-card"><div class="optam-top"><div><div class="optam-nm">'+esc(a.name)+(a.id===cur?' <b style="color:#16a34a">(viewing)</b>':'')+'</div><div class="optam-u">@'+esc(a.username)+'</div></div><div class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-edit" onclick="optEditAgentById(&#39;'+a.id+'&#39;)">✎ Edit</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></div></div>'+(chips?'<div class="optam-chips">'+chips+'</div>':'')+'</div>';
-    }).join('');
-  });}
+      return '<div class="optam-card"><div class="optam-top"><div><div class="optam-nm">'+esc(a.name)+(a.code?' <span style="color:#1d4ed8;font-weight:800;font-size:12px">['+esc(a.code)+']</span>':'')+(a.id===cur?' <b style="color:#16a34a">(viewing)</b>':'')+'</div><div class="optam-u">@'+esc(a.username)+'</div></div><div class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-edit" onclick="optEditAgentById(&#39;'+a.id+'&#39;)">✎ Edit</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></div></div>'+(chips?'<div class="optam-chips">'+chips+'</div>':'')+'</div>';
+    }).join('');}
+    box.innerHTML=search+cards;
+    var si=document.getElementById('optAgentSearch');if(si){si.oninput=function(){window._optAgentSearch=si.value;var p=si.selectionStart;optPaintAgents();var s2=document.getElementById('optAgentSearch');if(s2){s2.focus();try{s2.setSelectionRange(p,p);}catch(e){}}};}
+  }
+  window.optPaintAgents=optPaintAgents;
   window.optEditAgentById=function(id){var list=window._optAgentsCache||[];var a=list.filter(function(x){return x.id===id;})[0];if(a){addAgentFlow(a);}else{API.agents().then(function(r){if(r.ok){var a2=(r.j.agents||[]).filter(function(x){return x.id===id;})[0];if(a2)addAgentFlow(a2);}});}};
   window.optAddAgent=addAgentFlow;
   window.optOpenAgent=openAgent;
@@ -10817,7 +10828,7 @@ body.opt-ov #appPage{display:none!important}
       var _viewingAgent=(!_isAdmin)||((ss.getItem('optAgentId')||'admin')!=='admin');bc.add(_viewingAgent?'opt-view-agent':'opt-view-admin');
       // admin viewing an agent's account = VIEW ONLY (no editing / no persist)
       var _adminViewingAgent=_isAdmin&&((ss.getItem('optAgentId')||'admin')!=='admin');if(_adminViewingAgent)bc.add('opt-ro');
-      try{var ban=document.getElementById('optRoBanner');if(_adminViewingAgent){if(!ban){ban=document.createElement('div');ban.id='optRoBanner';var ap=document.getElementById('appPage');if(ap)ap.insertBefore(ban,ap.firstChild);}ban.innerHTML='👁 View-only — tinitingnan mo ang account ng agent. Hindi mo ito maeedit.';ban.style.display='';}else if(ban){ban.style.display='none';}}catch(e){}}catch(e){}
+      try{var ban=document.getElementById('optRoBanner');if(ban){ban.style.display='none';ban.innerHTML='';}}catch(e){}}catch(e){}
     try{var _ab=document.getElementById('optAdminBar');if(_ab)_ab.parentNode.removeChild(_ab);}catch(e){}
     if(u&&u.role==='admin'){renderAgentPicker(ss.getItem('optAgentId')||'admin');var mg=document.getElementById('optAgentMgmt');if(mg){mg.style.display='';} if(typeof optRenderAgentsInSettings==='function')optRenderAgentsInSettings();}
     loadSharedEvents();

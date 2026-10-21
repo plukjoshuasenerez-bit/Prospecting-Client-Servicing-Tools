@@ -6,6 +6,7 @@ const SHARED_BRANDING_KEY = 'optimum:shared:branding';
 const SHARED_LINKS_KEY = 'optimum:shared:links';
 const SHARED_PURGE_KEY = 'optimum:shared:purge';
 const SHARED_REMARKS_KEY = 'optimum:shared:remarks';
+const SHARED_ANNOUNCE_KEY = 'optimum:shared:announce';
 const ALOG_KEY = 'optimumActivityLog';
 
 module.exports = async (req, res) => {
@@ -48,6 +49,12 @@ module.exports = async (req, res) => {
         let token = 0;
         if (raw) { try { token = JSON.parse(raw).token || 0; } catch (e) {} }
         return send(res, 200, { token });
+      }
+      if (type === 'announce') {
+        const raw = await kvGet(SHARED_ANNOUNCE_KEY);
+        let announce = null;
+        if (raw) { try { announce = JSON.parse(raw); } catch (e) {} }
+        return send(res, 200, { announce });
       }
       if (type === 'remarks') {
         const raw = await kvGet(SHARED_REMARKS_KEY);
@@ -112,6 +119,11 @@ module.exports = async (req, res) => {
         const token = Number(b.token) || Date.now();
         await kvSet(SHARED_PURGE_KEY, JSON.stringify({ token: token }));
         return send(res, 200, { ok: true, token: token });
+      }
+      if ((b.type || type) === 'announce') {
+        const announce = { text: String(b.text || ''), active: !!b.active, updatedAt: new Date().toISOString(), by: me.name || 'Admin' };
+        await kvSet(SHARED_ANNOUNCE_KEY, JSON.stringify(announce));
+        return send(res, 200, { ok: true, announce });
       }
       if ((b.type || type) === 'remarks') {
         // Admin-only (already enforced above). Add / edit / delete internal remarks.

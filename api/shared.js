@@ -5,6 +5,7 @@ const SHARED_EVENTS_KEY = 'optimum:shared:events';
 const SHARED_BRANDING_KEY = 'optimum:shared:branding';
 const SHARED_LINKS_KEY = 'optimum:shared:links';
 const SHARED_PURGE_KEY = 'optimum:shared:purge';
+const SHARED_REMARKS_KEY = 'optimum:shared:remarks';
 const ALOG_KEY = 'optimumActivityLog';
 
 module.exports = async (req, res) => {
@@ -37,6 +38,16 @@ module.exports = async (req, res) => {
         let token = 0;
         if (raw) { try { token = JSON.parse(raw).token || 0; } catch (e) {} }
         return send(res, 200, { token });
+      }
+      if (type === 'remarks') {
+        const raw = await kvGet(SHARED_REMARKS_KEY);
+        let all = [];
+        if (raw) { try { all = JSON.parse(raw) || []; } catch (e) {} }
+        if (me.role === 'admin') return send(res, 200, { remarks: all });
+        // Agents may ONLY receive remarks explicitly shared with them. Private
+        // (admin_only) remarks and other agents' remarks are never returned.
+        const mine = all.filter(r => r && r.visibility === 'shared_with_agent' && r.agentId === me.uid);
+        return send(res, 200, { remarks: mine });
       }
       if (type === 'ranking') {
         const month = (req.query && req.query.month) || '';
@@ -91,6 +102,37 @@ module.exports = async (req, res) => {
         const token = Number(b.token) || Date.now();
         await kvSet(SHARED_PURGE_KEY, JSON.stringify({ token: token }));
         return send(res, 200, { ok: true, token: token });
+      }
+      if ((b.type || type) === 'remarks') {
+        // Admin-only (already enforced above). Add / edit / delete internal remarks.
+        const raw = await kvGet(SHARED_REMARKS_KEY);
+        let all = [];
+        if (raw) { try { all = JSON.parse(raw) || []; } catch (e) {} }
+        const action = b.action || 'save';
+        const now = new Date().toISOString();
+        if (action === 'delete') {
+          all = all.filter(r => r.id !== b.id);
+        } else if (b.id && all.some(r => r.id === b.id)) {
+          all = all.map(r => r.id === b.id ? Object.assign({}, r, {
+            remarkText: (b.remarkText != null ? String(b.remarkText) : r.remarkText),
+            visibility: (b.visibility === 'shared_with_agent' ? 'shared_with_agent' : (b.visibility === 'admin_only' ? 'admin_only' : r.visibility)),
+            updatedAt: now
+          }) : r);
+        } else {
+          all.push({
+            id: 'rm' + Date.now() + Math.random().toString(36).slice(2, 6),
+            prospectId: String(b.prospectId || ''),
+            agentId: String(b.agentId || ''),
+            adminUserId: me.uid,
+            adminName: me.name || 'Admin',
+            remarkText: String(b.remarkText || ''),
+            visibility: (b.visibility === 'shared_with_agent' ? 'shared_with_agent' : 'admin_only'),
+            createdAt: now,
+            updatedAt: now
+          });
+        }
+        await kvSet(SHARED_REMARKS_KEY, JSON.stringify(all));
+        return send(res, 200, { ok: true, count: all.length });
       }
       return send(res, 400, { error: 'Unknown type' });
     }

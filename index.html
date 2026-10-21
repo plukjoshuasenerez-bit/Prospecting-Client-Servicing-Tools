@@ -861,7 +861,7 @@ function prospectLine(p){
  const chat=url?`<a class="prospect-chatbtn" href="${ptEscapeAttr(url)}" target="_blank" rel="noopener" onclick="chatProspect(${i})" title="Open Messenger">💬</a>`:`<span class="prospect-chatbtn disabled" title="Add Messenger link in Edit">💬</span>`;
  const stageClass={"Approach":"approach","Setting Appointment":"setting","Done Client Meeting":"meeting","For Closing":"closing","Closed":"closed"}[p.engagement]||'approach';
  const stageOptions=['Approach','Setting Appointment','Done Client Meeting','For Closing','Closed'].map(x=>`<option value="${x}" ${p.engagement===x?'selected':''}>${x}</option>`).join('');
- return `<div class="prospect-line"><div class="prospect-chatbox"><div class="prospect-chat-top">${chat}<span class="prospect-approach-count">${count}</span></div><span class="prospect-age-running ${a.cls}">${a.label}</span></div><div class="prospect-field"><b>${safeText(p.name||'')}</b>${p.category?` <span style="display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:99px;background:#eef2ff;color:#4338ca;vertical-align:middle">${safeText(p.category)}</span>`:''}<div class="prospect-muted">${safeText(p.contact||'')}</div></div><div class="prospect-field">${safeText(p.occupation||'—')}</div><div class="prospect-field">${safeText(p.plan||'—')}</div><div class="prospect-field">${ptMoney(p.ape)}</div><div class="prospect-field"><select class="prospect-stage-select ${stageClass}" onchange="updateP(${i},'engagement',this.value)">${stageOptions}</select></div><div class="prospect-field"><span class="prospect-status-pill">${safeText(p.status||'Active')}</span></div><div class="prospect-field"><div class="prospect-remark">${remarks||'—'}</div></div><div class="prospect-actions-cell"><button class="prospect-edit-icon" onclick="editProspect(${i})" title="Edit prospect" aria-label="Edit prospect">✎</button><button class="prospect-delete-icon" onclick="deleteProspect(${i})" title="Delete prospect" aria-label="Delete prospect">🗑</button></div></div>`
+ return `<div class="prospect-line"><div class="prospect-chatbox"><div class="prospect-chat-top">${chat}<span class="prospect-approach-count">${count}</span></div><span class="prospect-age-running ${a.cls}">${a.label}</span></div><div class="prospect-field"><b>${safeText(p.name||'')}</b>${p.category?` <span style="display:inline-block;font-size:9px;font-weight:800;padding:1px 6px;border-radius:99px;background:#eef2ff;color:#4338ca;vertical-align:middle">${safeText(p.category)}</span>`:''}<div class="prospect-muted">${safeText(p.contact||'')}</div></div><div class="prospect-field">${safeText(p.occupation||'—')}</div><div class="prospect-field">${safeText(p.plan||'—')}</div><div class="prospect-field">${ptMoney(p.ape)}</div><div class="prospect-field"><select class="prospect-stage-select ${stageClass}" onchange="updateP(${i},'engagement',this.value)">${stageOptions}</select></div><div class="prospect-field"><span class="prospect-status-pill">${safeText(p.status||'Active')}</span></div><div class="prospect-field"><div class="prospect-remark">${remarks||'—'}</div></div><div class="prospect-actions-cell"><button class="prospect-edit-icon optRemarkBtn" data-pid="${p.id}" onclick="optOpenRemarks('${p.id}')" title="Admin Remarks" aria-label="Admin Remarks">📝</button><button class="prospect-edit-icon" onclick="editProspect(${i})" title="Edit prospect" aria-label="Edit prospect">✎</button><button class="prospect-delete-icon" onclick="deleteProspect(${i})" title="Delete prospect" aria-label="Delete prospect">🗑</button></div></div>`
 }
 function deleteProspect(i){if(!confirm('Delete this prospect?'))return;prospects.splice(i,1);ptSave();renderProspectTracker()}
 function meetingEndTime(start,minutes){
@@ -11420,5 +11420,79 @@ function optImportRecProsWorkbook(input){
   };
 })();
 </script>
+<script>
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
+  function findProspect(pid){try{return (prospects||[]).find(function(p){return String(p.id)===String(pid);});}catch(e){return null;}}
+  function fmt(d){try{return new Date(d).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return '';}}
+  var _pid=null,_agentId=null,_pname='';
+  function closeM(){var m=document.getElementById('optRemarkModal');if(m)m.remove();}
+  window.optCloseRemarks=closeM;
+  window.optOpenRemarks=function(pid){
+    _pid=String(pid);var p=findProspect(pid);_pname=p?(p.name||'Prospect'):'Prospect';_agentId=(p&&p.owner)||(window.optCurrentAid&&window.optCurrentAid())||'';
+    closeM();
+    var ov=document.createElement('div');ov.id='optRemarkModal';ov.className='optrm-ov';
+    ov.innerHTML='<div class="optrm-card"><div class="optrm-head"><div><div class="optrm-title">Admin Remarks</div><div class="optrm-sub">'+esc(_pname)+'</div></div><button class="optrm-x" onclick="optCloseRemarks()">✕</button></div><div class="optrm-body" id="optrmBody"><div class="optrm-load">Kinukuha…</div></div></div>';
+    ov.addEventListener('click',function(e){if(e.target===ov)closeM();});
+    document.body.appendChild(ov);
+    loadList();
+  };
+  function loadList(){
+    window.optAuthFetch('/api/shared?type=remarks').then(function(r){
+      var all=(r&&r.j&&r.j.remarks)||[];
+      var list=all.filter(function(x){return String(x.prospectId)===_pid;});
+      render(list);
+    }).catch(function(e){var b=document.getElementById('optrmBody');if(b)b.innerHTML='<div class="optrm-load">Error: '+esc(e.message)+'</div>';});
+  }
+  function render(list){
+    var b=document.getElementById('optrmBody');if(!b)return;
+    var admin=isAdmin();
+    var items=list.length?list.map(function(x){
+      var badge=x.visibility==='shared_with_agent'?'<span class="optrm-badge shared">Shared to agent</span>':'<span class="optrm-badge priv">Private</span>';
+      var ctrls=admin?('<div class="optrm-ctrls">'+(x.visibility==='shared_with_agent'?'<button onclick="optRemarkShare(\''+x.id+'\',0)">Unshare</button>':'<button onclick="optRemarkShare(\''+x.id+'\',1)">Share to agent</button>')+'<button class="del" onclick="optRemarkDel(\''+x.id+'\')">Delete</button></div>'):'';
+      return '<div class="optrm-item"><div class="optrm-meta">'+esc(x.adminName||'Admin')+' · '+esc(fmt(x.updatedAt||x.createdAt))+' '+badge+'</div><div class="optrm-text">'+esc(x.remarkText)+'</div>'+ctrls+'</div>';
+    }).join(''):(admin?'<div class="optrm-empty">Wala pang remark. Magdagdag sa ibaba.</div>':'<div class="optrm-empty">Walang naka-share na remark para sa prospect na ito.</div>');
+    var editor=admin?('<div class="optrm-editor"><textarea id="optrmText" placeholder="Magdagdag ng internal remark…"></textarea><label class="optrm-chk"><input type="checkbox" id="optrmShare"> Share sa agent (read-only nila)</label><button class="optrm-save" onclick="optRemarkAdd()">Add Remark</button></div>'):'';
+    b.innerHTML='<div class="optrm-list">'+items+'</div>'+editor;
+  }
+  window.optRemarkAdd=function(){
+    var t=document.getElementById('optrmText');var sh=document.getElementById('optrmShare');
+    var txt=(t&&t.value||'').trim();if(!txt){alert('Isulat muna ang remark.');return;}
+    var body={type:'remarks',action:'save',prospectId:_pid,agentId:_agentId,remarkText:txt,visibility:(sh&&sh.checked)?'shared_with_agent':'admin_only'};
+    window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify(body)}).then(function(r){if(r&&r.ok){loadList();}else alert('Save failed: '+((r&&r.j&&r.j.error)||'error'));}).catch(function(e){alert('Save failed: '+e.message);});
+  };
+  window.optRemarkShare=function(id,on){
+    window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify({type:'remarks',id:id,visibility:on?'shared_with_agent':'admin_only'})}).then(function(r){if(r&&r.ok)loadList();else alert('Failed: '+((r&&r.j&&r.j.error)||'error'));}).catch(function(e){alert('Failed: '+e.message);});
+  };
+  window.optRemarkDel=function(id){
+    if(!confirm('Burahin ang remark na ito?'))return;
+    window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify({type:'remarks',action:'delete',id:id})}).then(function(r){if(r&&r.ok)loadList();else alert('Failed');}).catch(function(e){alert('Failed: '+e.message);});
+  };
+})();
+</script>
+<style>
+.optrm-ov{position:fixed;inset:0;background:rgba(8,21,43,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px}
+.optrm-card{background:#fff;border-radius:14px;width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
+.optrm-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eef2f7}
+.optrm-title{font-weight:900;font-size:15px;color:#071a33}
+.optrm-sub{font-size:12px;color:#64748b;font-weight:700;margin-top:2px}
+.optrm-x{border:0;background:#f1f5f9;border-radius:8px;width:30px;height:30px;font-size:14px;cursor:pointer;color:#475569}
+.optrm-body{padding:14px 16px;overflow:auto}
+.optrm-load,.optrm-empty{color:#64748b;font-size:13px;padding:10px 0}
+.optrm-item{border:1px solid #eef2f7;border-radius:10px;padding:10px;margin-bottom:9px;background:#f8fafc}
+.optrm-meta{font-size:10px;color:#64748b;font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.optrm-badge{font-size:9px;font-weight:900;padding:1px 7px;border-radius:999px}
+.optrm-badge.shared{background:#dcfce7;color:#166534}
+.optrm-badge.priv{background:#e5e7eb;color:#475569}
+.optrm-text{font-size:13px;color:#0b1020;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+.optrm-ctrls{display:flex;gap:7px;margin-top:8px}
+.optrm-ctrls button{border:1px solid #cbd5e1;background:#fff;border-radius:7px;font-size:11px;font-weight:800;padding:4px 9px;cursor:pointer;color:#0b5ed7}
+.optrm-ctrls button.del{color:#dc2626;border-color:#fca5a5}
+.optrm-editor{border-top:1px solid #eef2f7;margin-top:6px;padding-top:12px}
+.optrm-editor textarea{width:100%;min-height:72px;border:1px solid #cbd5e1;border-radius:9px;padding:9px;font-size:13px;font-family:inherit;resize:vertical}
+.optrm-chk{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#334155;margin:9px 0}
+.optrm-save{width:100%;border:0;background:#06142b;color:#fff;border-radius:9px;padding:10px;font-weight:900;cursor:pointer;font-size:13px}
+</style>
 </body>
 </html>

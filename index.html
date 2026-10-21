@@ -220,12 +220,16 @@ input[type="color"]{padding:4px}
   <div class="layout">
     <aside class="sidebar">
       <div class="side-title" id="sideTitle" style="display:none">OPTIMUM</div>
+      <div class="side-group">Main Workspace</div>
+      <button class="nav-btn" data-page="home" onclick="showPage('home',this)">🏠 <span class="nav-label">Home</span></button>
       <button class="nav-btn" data-page="calendar" onclick="showPage('calendar',this);try{window.optLoadAgentBirthdays&&window.optLoadAgentBirthdays();}catch(e){}">📅 <span class="nav-label">Calendar</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)">🎯 <span class="nav-label">Prospect Tracker</span></button>
-      <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();">🏅 <span class="nav-label">Activity Log</span></button>
-      <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();">🧲 <span class="nav-label">Recruitment Tracker</span></button>
       <button class="nav-btn" data-page="clientref" onclick="showClientRef('clients',this)">📋 <span class="nav-label">Client &amp; Refresher</span></button>
+      <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();">🏅 <span class="nav-label">Activity Log</span></button>
+      <div class="side-group">Team Management</div>
       <button class="nav-btn opt-admin-only" data-page="agents" onclick="showPage('agents',this);try{optRenderAgentsInSettings&&optRenderAgentsInSettings();}catch(e){}">👥 <span class="nav-label">Agents</span></button>
+      <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();">🧲 <span class="nav-label">Recruitment Tracker</span></button>
+      <div class="side-group">Resources</div>
       <button class="nav-btn" data-page="linkvault" onclick="showPage('linkvault',this);try{optLVRender&&optLVRender();}catch(e){}">🔗 <span class="nav-label">Link Vault</span></button>
       <button class="nav-btn opt-settings-nav" data-page="customize" onclick="showPage('customize',this)">⚙️ <span class="nav-label">Customize</span></button>
     </aside>
@@ -240,13 +244,21 @@ input[type="color"]{padding:4px}
 
     <main class="content">
       <section id="home" class="app-section">
-        <h1 class="page-title">Productivity &amp; Client Servicing Tools</h1>
-        <p class="page-sub">Your OPTIMUM workspace for prospecting, client servicing, and policy review.</p>
-        <div class="grid">
-          <div class="card"><h3>Prospect List</h3><div class="kpi">LOCAL</div><p>Ready for your prospect management module and optional Apps Script sync.</p></div>
-          <div class="card"><h3>Client List</h3><div class="kpi">LOCAL</div><p>Client records can remain in browser storage unless a sync URL is configured.</p></div>
-          <div class="card"><h3>Policy Review</h3><div class="kpi">SYNC</div><p>Only this workflow, Prospect List, and Client List use the Apps Script connection.</p></div>
-          <div class="card"><h3>Other Tools</h3><div class="kpi">OFFLINE</div><p>Other app settings and productivity tools use local storage only.</p></div>
+        <div class="dash-wrap">
+          <div class="dash-hero">
+            <div class="dash-hero-text">
+              <h1 id="dashWelcome">Welcome back!</h1>
+              <p>Your OPTIMUM workspace for prospecting, client servicing, and professional growth.</p>
+            </div>
+            <div class="dash-hero-badge">OPTIMUM</div>
+          </div>
+          <div id="dashAnnounce" class="dash-announce hidden">
+            <div class="dash-announce-ic">📢</div>
+            <div class="dash-announce-body"><div class="dash-announce-title">Announcement</div><div id="dashAnnounceText"></div></div>
+            <button class="dash-announce-edit opt-admin-only" onclick="optEditAnnounce()">Edit</button>
+          </div>
+          <div class="dash-section-label">Quick Access</div>
+          <div class="dash-cards" id="dashCards"></div>
         </div>
       </section>
 
@@ -535,6 +547,7 @@ function showPage(id,btn){
   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
   if(btn) btn.classList.add('active');
   if(id==='calendar' && typeof renderCalendar==='function') renderCalendar();
+  if(id==='home' && typeof window.optRenderHome==='function') window.optRenderHome();
   if(id==='proposal' && typeof renderProposalTabs==='function'){ refreshPlanSelect(selectedPlan||''); renderProposalTabs(); if(typeof renderStorage==='function') renderStorage(); }
 }
 
@@ -11452,6 +11465,62 @@ function optImportRecProsWorkbook(input){
 })();
 </script>
 <script>
+/* ===== OPTIMUM homepage dashboard ===== */
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
+  window.optGoPage=function(p){var b=document.querySelector('.nav-btn[data-page="'+p+'"]');if(b){b.click();}else if(typeof showPage==='function'){showPage(p);}};
+  function card(ic,title,m1,m2,btn,page){
+    return '<div class="dash-card"><div class="dash-card-ic">'+ic+'</div><div class="dash-card-t">'+esc(title)+'</div>'+
+      '<div class="dash-card-m">'+m1+(m2?('<br><span class="dash-card-m2">'+m2+'</span>'):'')+'</div>'+
+      '<button class="dash-card-btn" onclick="optGoPage(\''+page+'\')">'+esc(btn)+'</button></div>';
+  }
+  window.optRenderHome=function(){
+    try{
+      var u=null;try{u=JSON.parse(sessionStorage.getItem('optUser')||'null');}catch(e){}
+      var nm=(u&&u.name)?String(u.name).trim().split(/\s+/)[0]:'';
+      var wel=document.getElementById('dashWelcome');if(wel)wel.textContent='Welcome back'+(nm?(', '+nm):'')+'!';
+      var admin=isAdmin();var me=(window.optCurrentAid&&window.optCurrentAid())||'';
+      var pros=[];try{pros=(prospects||[]).slice();}catch(e){}
+      if(!admin&&me)pros=pros.filter(function(p){return p&&p.owner===me;});
+      var today=new Date();today.setHours(0,0,0,0);
+      var fdue=pros.filter(function(p){if(!p.nextFollowUp)return false;var d=new Date(p.nextFollowUp);return !isNaN(d)&&d<=today;}).length;
+      var recs=[];try{recs=(typeof recLoad==='function')?recLoad():[];}catch(e){}
+      if(!admin&&me)recs=recs.filter(function(x){return x&&x.owner===me;});
+      var cal=[];try{cal=(typeof getCalendar==='function')?getCalendar():[];}catch(e){}
+      var up=cal.filter(function(ev){if(!ev||!ev.date)return false;var d=new Date(String(ev.date)+'T00:00:00');return !isNaN(d)&&d>=today;}).sort(function(a,b){return String(a.date+(a.start||'')).localeCompare(String(b.date+(b.start||'')));});
+      var nextEv=up[0];
+      var cards=[];
+      cards.push(card('🎯','Prospect Tracker',pros.length+' prospect(s)',fdue+' follow-up(s) due','Open Prospects','prospect'));
+      cards.push(card('📅','Calendar',up.length+' upcoming',nextEv?('Next: '+esc(nextEv.title||'Event')+' · '+esc(nextEv.date)):'No upcoming events','View Calendar','calendar'));
+      cards.push(card('🧲','Recruitment',recs.length+' in pipeline','','Open Recruitment','recruit'));
+      cards.push(card('📋','Client &amp; Refresher','Client records &amp; cards','','Open','clientref'));
+      cards.push(card('🏅','Activity Log','Track your points','','Open Log','activitylog'));
+      cards.push(card('🔗','Link Vault','Shared &amp; private links','','Open Links','linkvault'));
+      if(admin)cards.push(card('👥','Agents','Manage your team','','Open Agents','agents'));
+      var box=document.getElementById('dashCards');if(box)box.innerHTML=cards.join('');
+      optLoadAnnounce();
+    }catch(e){}
+  };
+  function optLoadAnnounce(){
+    if(!window.optAuthFetch)return;
+    window.optAuthFetch('/api/shared?type=announce').then(function(r){
+      var a=(r&&r.j&&r.j.announce)||null;var box=document.getElementById('dashAnnounce');var txt=document.getElementById('dashAnnounceText');if(!box)return;
+      if(a&&a.text&&a.active){if(txt)txt.textContent=a.text;box.classList.remove('hidden');}
+      else if(isAdmin()){if(txt)txt.textContent='(Walang announcement. I-click ang Edit para magdagdag para sa lahat ng agents.)';box.classList.remove('hidden');}
+      else{box.classList.add('hidden');}
+    }).catch(function(){});
+  }
+  window.optEditAnnounce=function(){
+    if(!isAdmin())return;
+    var cur=document.getElementById('dashAnnounceText');var old=(cur&&cur.textContent)||'';if(old.indexOf('(Walang')===0)old='';
+    var v=prompt('Announcement para sa lahat ng agents (iwan blanko para alisin):',old);
+    if(v===null)return;
+    window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify({type:'announce',text:v,active:!!v.trim()})}).then(function(r){if(r&&r.ok)optLoadAnnounce();else alert('Failed: '+((r&&r.j&&r.j.error)||'error'));}).catch(function(e){alert('Failed: '+e.message);});
+  };
+  // initial paint if the home section is already visible after load
+  try{setTimeout(function(){var h=document.getElementById('home');if(h&&!h.classList.contains('hidden'))window.optRenderHome();},900);}catch(e){}
+})();
 (function(){
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
@@ -11503,6 +11572,31 @@ function optImportRecProsWorkbook(input){
 })();
 </script>
 <style>
+/* ===== Dashboard homepage + grouped sidebar ===== */
+.side-group{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;padding:12px 12px 4px;margin-top:4px}
+.dash-wrap{max-width:1200px;margin:0 auto}
+.dash-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;background:linear-gradient(120deg,#0B5ED7,#083B8A);color:#fff;border-radius:18px;padding:26px 28px;box-shadow:0 10px 30px rgba(8,59,138,.25)}
+.dash-hero-text h1{margin:0 0 6px;font-size:24px;font-weight:900;color:#fff}
+.dash-hero-text p{margin:0;font-size:14px;opacity:.9;max-width:560px}
+.dash-hero-badge{font-weight:900;font-size:13px;letter-spacing:.12em;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:999px;flex:0 0 auto}
+.dash-announce{display:flex;align-items:center;gap:14px;background:#fffbeb;border:1px solid #FFD23F;border-left:5px solid #FFD23F;border-radius:14px;padding:14px 18px;margin-top:16px}
+.dash-announce-ic{font-size:22px}
+.dash-announce-body{flex:1;min-width:0}
+.dash-announce-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#b45309}
+#dashAnnounceText{font-size:14px;color:#1f2937;font-weight:600;margin-top:2px;white-space:pre-wrap}
+.dash-announce-edit{border:1px solid #f59e0b;background:#fff;color:#b45309;border-radius:9px;font-weight:800;padding:7px 12px;cursor:pointer;font-size:12px;flex:0 0 auto}
+.dash-section-label{font-size:13px;font-weight:900;color:#0f172a;margin:22px 2px 12px}
+.dash-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.dash-card{background:#fff;border:1px solid #eef2f7;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:9px;box-shadow:0 4px 16px rgba(15,23,42,.05);transition:transform .15s,box-shadow .15s}
+.dash-card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(15,23,42,.1)}
+.dash-card-ic{width:44px;height:44px;border-radius:12px;background:#eef4ff;display:flex;align-items:center;justify-content:center;font-size:22px}
+.dash-card-t{font-weight:900;font-size:15px;color:#0f172a}
+.dash-card-m{font-size:13px;color:#475569;font-weight:600;flex:1}
+.dash-card-m2{color:#64748b;font-weight:600;font-size:12px}
+.dash-card-btn{border:0;background:#0B5ED7;color:#fff;border-radius:10px;padding:10px;font-weight:800;cursor:pointer;font-size:13px;margin-top:2px}
+.dash-card-btn:hover{background:#083B8A}
+@media(max-width:980px){.dash-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.dash-cards{grid-template-columns:1fr}.side-group{display:none!important}.dash-hero{flex-direction:column;align-items:flex-start;text-align:left}.dash-hero-badge{display:none}}
 .optrm-ov{position:fixed;inset:0;background:rgba(8,21,43,.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:16px}
 .optrm-card{background:#fff;border-radius:14px;width:100%;max-width:460px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.3)}
 .optrm-head{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #eef2f7}

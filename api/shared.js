@@ -19,6 +19,16 @@ module.exports = async (req, res) => {
         const raw = await kvGet(SHARED_EVENTS_KEY);
         let events = [];
         if (raw) { try { events = JSON.parse(raw) || []; } catch (e) {} }
+        // Safety net: an event explicitly marked admin-only must never reach an
+        // agent through the API, even if one was accidentally pushed into the
+        // shared blob. Admins still receive everything. This cannot hide a
+        // legitimately shared event (those are never 'adminonly').
+        if (me.role !== 'admin') {
+          events = events.filter(function (e) {
+            var rf = String((e && e.reqFor) || '').toLowerCase();
+            return rf !== 'adminonly' && rf !== 'admin_only' && rf !== 'private';
+          });
+        }
         return send(res, 200, { events });
       }
       if (type === 'branding') {

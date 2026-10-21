@@ -10863,13 +10863,28 @@ body.opt-ov #appPage{display:none!important}
     var _origGet=window.getCalendar, _origSet=window.setCalendar;
     window.getCalendar=function(){
       var own=[]; try{own=_origGet()||[];}catch(e){own=[];}
+      var _admin=!!(window.optIsAdmin&&window.optIsAdmin());
+      var _me=(window.optCurrentAid&&window.optCurrentAid())||'';
+      // An AGENT only ever sees calendar events they own. Unstamped or
+      // foreign-owned events (e.g. admin trainings that leaked into their blob)
+      // are hidden; admin-shared events still come through via optSharedEvents.
+      if(!_admin && _me){ own=own.filter(function(e){return e&&e.owner===_me;}); }
       var ids={}; own.forEach(function(e){if(e&&e.id)ids[e.id]=1;});
       var sh=(window.optSharedEvents||[]).filter(function(e){return e&&!ids[e.id];}).map(function(e){var c={};for(var k in e)c[k]=e[k];c._shared=true;return c;});
       sh.forEach(function(e){ids[e.id]=1;});
       var bd=(window.optBirthdayEvents||[]).filter(function(e){return e&&!ids[e.id];});
       return own.concat(sh).concat(bd);
     };
-    window.setCalendar=function(a){var ownOnly=(a||[]).filter(function(e){return !(e&&(e._shared||e._bday));});return _origSet(ownOnly);};
+    window.setCalendar=function(a){
+      var _admin=!!(window.optIsAdmin&&window.optIsAdmin());
+      var _me=(window.optCurrentAid&&window.optCurrentAid())||'';
+      // Stamp the owner on genuinely-authored events so an agent's own entries
+      // persist and display. Skip when an admin is viewing an agent's workspace
+      // so leaked/foreign events are never mis-claimed.
+      var _stamp=((!_admin)||(_me==='admin'))&&!!_me;
+      var ownOnly=(a||[]).filter(function(e){return !(e&&(e._shared||e._bday));}).map(function(e){if(_stamp&&e&&!e.owner)e.owner=_me;return e;});
+      return _origSet(ownOnly);
+    };
   }
 
   // --- share a calendar event to all agents (admin) ---

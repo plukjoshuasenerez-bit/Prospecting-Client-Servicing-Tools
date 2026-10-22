@@ -383,6 +383,10 @@ input[type="color"]{padding:4px}
               <button type="button" class="opt-side-sw" data-bg="#151a21" data-fg="#dfe4eb" onclick="optPickSidebar(this)" style="background:#151a21;color:#fff">Dark</button>
               <button type="button" class="opt-side-sw" data-bg="#0e3a47" data-fg="#d6f1f5" onclick="optPickSidebar(this)" style="background:#0e3a47;color:#fff">Teal</button>
               <button type="button" class="opt-side-sw" data-bg="#3a0f1c" data-fg="#f7d9e0" onclick="optPickSidebar(this)" style="background:#3a0f1c;color:#fff">Maroon</button>
+              <button type="button" class="opt-side-sw" data-bg="#1a1a1a" data-fg="#f3f4f6" onclick="optPickSidebar(this)" style="background:#1a1a1a;color:#fff">Black</button>
+            </div></div>
+            <div class="cw-group"><span class="cw-lbl">Presets</span><div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button type="button" onclick="optApplyColorway('pru')" title="Pru Life UK: red, gray, white, black" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;font-weight:800;cursor:pointer;color:#1a1a1a"><span style="width:12px;height:12px;border-radius:3px;background:#ED1B2E;display:inline-block"></span>Pru Life UK</button>
             </div></div>
             <div class="cw-group" style="margin-left:auto;align-self:flex-end"><span class="cw-lbl" style="visibility:hidden">Save</span><div style="display:flex;gap:8px"><button onclick="optSaveAppearance()" style="padding:9px 16px;border:0;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;cursor:pointer;white-space:nowrap">💾 Save</button><button onclick="optResetAppearance()" style="padding:9px 14px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">Reset</button></div></div>
           </div>
@@ -11257,6 +11261,16 @@ body.opt-ov #appPage{display:none!important}
   window.optApplyAppearance=apply;
   window.optPreviewAppearance=function(){var r=document.documentElement.style;var p=_v('myPrimary'),ac=_v('myAccent'),f=_v('myFont');if(p){r.setProperty('--primary',p);r.setProperty('--primary2',p);}if(ac)r.setProperty('--accent',ac);if(f)r.setProperty('--app-font',f);};
   window.optPickSidebar=function(btn){try{document.querySelectorAll('.opt-side-sw').forEach(function(b){b.classList.remove('sel');});}catch(e){}btn.classList.add('sel');var bg=btn.getAttribute('data-bg'),fg=btn.getAttribute('data-fg');var r=document.documentElement.style;r.setProperty('--sidebar-bg',bg);r.setProperty('--sidebar-fg',fg);r.setProperty('--sidebar-active',bg.toLowerCase()==='#ffffff'?'#f1f5f9':'rgba(255,255,255,.12)');};
+  // Quick color-way presets. "pru" = Pru Life UK (red primary, gray accent, black sidebar, white/black neutrals).
+  window.optApplyColorway=function(name){
+    var presets={pru:{primary:'#ED1B2E',accent:'#6B7280',sidebarBg:'#1a1a1a',font:"Arial,Helvetica,sans-serif"}};
+    var p=presets[name];if(!p)return;
+    var set=function(id,v){var el=document.getElementById(id);if(el&&v)el.value=v;};
+    set('myPrimary',p.primary);set('myAccent',p.accent);if(p.font)set('myFont',p.font);
+    try{var sw=Array.prototype.filter.call(document.querySelectorAll('.opt-side-sw'),function(b){return b.getAttribute('data-bg').toLowerCase()===p.sidebarBg.toLowerCase();})[0];if(sw)window.optPickSidebar(sw);}catch(e){}
+    if(window.optPreviewAppearance)window.optPreviewAppearance();
+    try{if(window.optSaveAppearance)window.optSaveAppearance();}catch(e){}
+  };
   function curSide(){var s=document.querySelector('.opt-side-sw.sel');return s?{bg:s.getAttribute('data-bg'),fg:s.getAttribute('data-fg')}:null;}
   window.optSaveAppearance=function(){var s=curSide();var a={primary:_v('myPrimary'),accent:_v('myAccent'),font:_v('myFont')};if(s){a.sidebarBg=s.bg;a.sidebarFg=s.fg;}else{var cur=getA();if(cur.sidebarBg){a.sidebarBg=cur.sidebarBg;a.sidebarFg=cur.sidebarFg;}}try{localStorage.setItem(KEY,JSON.stringify(a));}catch(e){}apply();try{if(window.optPushNow)window.optPushNow();}catch(e){}alert('Na-save ang iyong appearance ✓');};
   window.optResetAppearance=function(){try{localStorage.removeItem(KEY);}catch(e){}var r=document.documentElement.style;['--primary','--primary2','--accent','--sidebar-bg','--sidebar-fg','--sidebar-active','--app-font'].forEach(function(v){r.removeProperty(v);});try{if(window.optPushNow)window.optPushNow();}catch(e){}window.optInitAppearanceInputs&&window.optInitAppearanceInputs();alert('Na-reset sa default ✓');};

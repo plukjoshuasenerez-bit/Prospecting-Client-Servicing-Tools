@@ -10048,6 +10048,9 @@ body.opt-user-admin #loggedUser{display:none}
 .opt-savenote.sv-ok{background:#ecfdf5;color:#047857}
 .opt-savenote.sv-fail{background:#fef2f2;color:#dc2626}
 .opt-savenote .sv-retry{border:1px solid #fca5a5;background:#fff;color:#dc2626;border-radius:6px;font-size:10px;font-weight:800;padding:1px 7px;cursor:pointer;line-height:1.5}
+.opt-savenote.sv-sync{background:#eff6ff}
+.opt-savenote .sv-syncbtn{border:1px solid #93c5fd;background:#fff;color:#1d4ed8;border-radius:7px;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;line-height:1.4}
+.opt-savenote .sv-syncbtn:hover{background:#dbeafe}
 .opt-savenote .sv-retry:hover{background:#fff1f2}
 /* ---- activity editor line-icon buttons + google-calendar checkbox ---- */
 .act-icon{width:46px;height:46px;border:0;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s ease;padding:0}
@@ -10557,15 +10560,17 @@ body.opt-ov #appPage{display:none!important}
   function pullIfRemoteNewer(){
     if(window._optSwitching||dirty||saving||_pullBusy)return;var aid=currentAid();if(!aid||!tok())return;_pullBusy=true;
     API.getData(aid).then(function(r){_pullBusy=false;if(!r.ok)return;if(dirty||saving)return;
-      // Compare the cloud copy against what is ACTUALLY in the browser now (not a
-      // stale saved canon). Server-side data protection can make the stored blob
-      // differ from the last snapshot the client sent, which previously caused an
-      // endless reload loop. Only reload when the cloud genuinely differs from the
-      // current local data (e.g. another device changed it).
+      // NEVER auto-reload. The app used to call location.reload() whenever the
+      // cloud differed from local, which made it refresh constantly and become
+      // unusable. Instead, when the cloud genuinely differs from the CURRENT
+      // browser data (e.g. another device changed it), surface a non-intrusive
+      // "tap to sync" chip and let the user refresh on demand.
       var remote=optCanon((r.j.data&&r.j.data.keys)||{});var local=optCanon(snapshot());
-      if(remote!==local){setSaveNote('Updating…');ss.removeItem('optHydratedFor');hydrate(aid);}
+      if(remote!==local){window.optPendingSyncAid=aid;try{showSyncChip();}catch(e){}}
     }).catch(function(){_pullBusy=false;});
   }
+  function showSyncChip(){var el=document.getElementById('optSaveNote');if(!el)return;el.className='opt-savenote sv-sync';el.innerHTML='<button type="button" class="sv-syncbtn" onclick="optDoManualSync()">🔄 Bagong update — i-tap</button>';el.title='May bagong data mula sa cloud';}
+  window.optDoManualSync=function(){var aid=window.optPendingSyncAid||currentAid();if(!aid||!tok())return;window.optPendingSyncAid=null;ss.removeItem('optHydratedFor');hydrate(aid);};
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')pullIfRemoteNewer();});
   window.addEventListener('focus',pullIfRemoteNewer);
 

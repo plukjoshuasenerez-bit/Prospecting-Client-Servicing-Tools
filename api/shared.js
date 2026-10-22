@@ -7,6 +7,26 @@ const SHARED_LINKS_KEY = 'optimum:shared:links';
 const SHARED_PURGE_KEY = 'optimum:shared:purge';
 const SHARED_REMARKS_KEY = 'optimum:shared:remarks';
 const SHARED_ANNOUNCE_KEY = 'optimum:shared:announce';
+const SHARED_PERF_KEY = 'optimum:shared:perf';
+
+// Rank a map of {aid: value} with standard competition ranking (ties share a
+// rank, next rank skips). Higher value = better (rank 1). Returns {aid: rank}.
+function rankMap(vals) {
+  const arr = Object.keys(vals).map(function (k) { return { id: k, v: Number(vals[k]) || 0 }; });
+  arr.sort(function (a, b) { return b.v - a.v; });
+  const out = {}; let rank = 0, seen = 0, prev = null;
+  for (let i = 0; i < arr.length; i++) {
+    seen++;
+    if (prev === null || arr[i].v !== prev) { rank = seen; prev = arr[i].v; }
+    out[arr[i].id] = rank;
+  }
+  return out;
+}
+function perfRanks(agents, metricKey) {
+  const vals = {};
+  Object.keys(agents || {}).forEach(function (aid) { vals[aid] = (agents[aid] && Number(agents[aid][metricKey])) || 0; });
+  return rankMap(vals);
+}
 const ALOG_KEY = 'optimumActivityLog';
 
 module.exports = async (req, res) => {
@@ -55,6 +75,26 @@ module.exports = async (req, res) => {
         let announce = null;
         if (raw) { try { announce = JSON.parse(raw); } catch (e) {} }
         return send(res, 200, { announce });
+      }
+      if (type === 'perf') {
+        const raw = await kvGet(SHARED_PERF_KEY);
+        let blob = { agents: {}, config: {} };
+        if (raw) { try { blob = JSON.parse(raw) || blob; } catch (e) {} }
+        const agents = blob.agents || {};
+        const config = blob.config || {};
+        const rankBy = (config.rankBy === 'CC') ? 'CC' : 'APE';
+        // Compute ranks for each period using the configured metric.
+        const mtdR = perfRanks(agents, 'mtd' + rankBy);
+        const qtdR = perfRanks(agents, 'qtd' + rankBy);
+        const addR = perfRanks(agents, 'add' + rankBy);
+        const pop = Object.keys(agents).length;
+        if (me.role === 'admin') {
+          return send(res, 200, { perf: { agents: agents, config: config, ranks: { mtd: mtdR, qtd: qtdR, add: addR }, pop: pop } });
+        }
+        // Agent: only their own figures + shared config + their own ranks. Other
+        // agents' raw numbers are never sent.
+        const meRec = agents[me.uid] || {};
+        return send(res, 200, { perf: { me: meRec, config: config, ranks: { mtd: mtdR[me.uid] || null, qtd: qtdR[me.uid] || null, add: addR[me.uid] || null }, pop: pop } });
       }
       if (type === 'remarks') {
         const raw = await kvGet(SHARED_REMARKS_KEY);
@@ -124,6 +164,14 @@ module.exports = async (req, res) => {
         const announce = { text: String(b.text || ''), active: !!b.active, updatedAt: new Date().toISOString(), by: me.name || 'Admin' };
         await kvSet(SHARED_ANNOUNCE_KEY, JSON.stringify(announce));
         return send(res, 200, { ok: true, announce });
+      }
+      if ((b.type || type) === 'perf') {
+        // Admin-only (enforced above). Store the whole performance blob.
+        const agents = (b.agents && typeof b.agents === 'object') ? b.agents : {};
+        const config = (b.config && typeof b.config === 'object') ? b.config : {};
+        const blob = { agents: agents, config: config, updatedAt: new Date().toISOString(), by: me.name || 'Admin' };
+        await kvSet(SHARED_PERF_KEY, JSON.stringify(blob));
+        return send(res, 200, { ok: true });
       }
       if ((b.type || type) === 'remarks') {
         // Admin-only (already enforced above). Add / edit / delete internal remarks.

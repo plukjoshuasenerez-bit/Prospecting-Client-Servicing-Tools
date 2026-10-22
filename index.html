@@ -10518,6 +10518,7 @@ body.opt-ov #appPage{display:none!important}
     API.getData(aid).then(function(r){
       if(!r.ok){showOverlay('<h2>Error</h2><p class="sub">'+(r.j.error||'Hindi makuha ang data')+'</p><button class="optbtn" onclick="location.reload()">Retry</button>');return;}
       restore((r.j.data&&r.j.data.keys)||{});
+      try{ss.setItem('optLoadedCanon',optCanon(snapshot()));}catch(e){}
       ss.setItem('optHydratedFor',aid); ss.setItem('optAgentId',aid); ss.setItem('optimum_logged_in','1');
       location.reload();
     }).catch(function(e){showOverlay('<h2>Error</h2><p class="sub">'+e.message+'</p><button class="optbtn" onclick="location.reload()">Retry</button>');});
@@ -10556,7 +10557,12 @@ body.opt-ov #appPage{display:none!important}
   function pullIfRemoteNewer(){
     if(window._optSwitching||dirty||saving||_pullBusy)return;var aid=currentAid();if(!aid||!tok())return;_pullBusy=true;
     API.getData(aid).then(function(r){_pullBusy=false;if(!r.ok)return;if(dirty||saving)return;
-      var remote=optCanon((r.j.data&&r.j.data.keys)||{});var local=ss.getItem('optLoadedCanon');if(local==null)local=optCanon(snapshot());
+      // Compare the cloud copy against what is ACTUALLY in the browser now (not a
+      // stale saved canon). Server-side data protection can make the stored blob
+      // differ from the last snapshot the client sent, which previously caused an
+      // endless reload loop. Only reload when the cloud genuinely differs from the
+      // current local data (e.g. another device changed it).
+      var remote=optCanon((r.j.data&&r.j.data.keys)||{});var local=optCanon(snapshot());
       if(remote!==local){setSaveNote('Updating…');ss.removeItem('optHydratedFor');hydrate(aid);}
     }).catch(function(){_pullBusy=false;});
   }

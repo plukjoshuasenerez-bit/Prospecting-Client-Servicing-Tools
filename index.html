@@ -227,6 +227,7 @@ input[type="color"]{padding:4px}
       <button class="nav-btn" data-page="clientref" onclick="showClientRef('clients',this)">📋 <span class="nav-label">Client &amp; Refresher</span></button>
       <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();">🏅 <span class="nav-label">Activity Log</span></button>
       <div class="side-group">Team Management</div>
+      <button class="nav-btn" data-page="performance" onclick="showPage('performance',this);try{optRenderPerformance&&optRenderPerformance();}catch(e){}">💹 <span class="nav-label">Performance</span></button>
       <button class="nav-btn opt-admin-only" data-page="agents" onclick="showPage('agents',this);try{optRenderAgentsInSettings&&optRenderAgentsInSettings();}catch(e){}">👥 <span class="nav-label">Agents</span></button>
       <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();">🧲 <span class="nav-label">Recruitment Tracker</span></button>
       <div class="side-group">Resources</div>
@@ -316,6 +317,10 @@ input[type="color"]{padding:4px}
   <div id="recModal" class="rec-modal"><div class="rec-modal-box"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="margin:0">Add Recruit</h3><button class="rec-mx" onclick="recCloseModal()">✕</button></div><div class="rec-form rec-form-modal"><div><label>Name</label><input id="recName"></div><div><label>Contact</label><input id="recContact"></div><div><label>Email</label><input id="recEmail"></div><div><label>Messenger / SocMed link</label><input id="recSocmed" placeholder="m.me/... or FB profile"></div><div><label>Occupation</label><input id="recOccupation"></div><div><label>Course</label><input id="recCourse"></div><div><label>Age</label><input id="recAge" type="number" min="0"></div><div><label>Location</label><input id="recLocation"></div><div><label>Source</label><input id="recSource" list="recSourceList" placeholder="Referral, Facebook, Event..."><datalist id="recSourceList"><option value="Referral"><option value="Client Referral"><option value="Facebook"><option value="Messenger"><option value="Walk-in"><option value="Event"><option value="Seminar"><option value="Cold Call"><option value="Family"><option value="Friend"><option value="BYB"></datalist></div><div><label>Stage</label><select id="recStage"></select></div></div><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px"><button class="rec-cancel" onclick="recCloseModal()">Cancel</button><button class="rec-save" onclick="recAdd()">+ Add Recruit</button></div></div></div>
   <div class="rec-stage-tabs" id="recStageTabs"></div>
   <div class="card" style="margin-top:14px"><div id="recList"></div></div>
+</section>
+
+<section id="performance" class="app-section hidden">
+  <div id="perfRoot"><div class="perf-loading">Kinukuha ang performance…</div></div>
 </section>
 <section id="clientref" class="app-section hidden" style="padding:0;margin:0">
   <iframe id="prismFrame" title="Client & Refresher" style="width:100%;height:88vh;min-height:600px;border:0;display:block;background:#fff"></iframe>
@@ -11546,6 +11551,209 @@ function optImportRecProsWorkbook(input){
   // initial paint if the home section is already visible after load
   try{setTimeout(function(){var h=document.getElementById('home');if(h&&!h.classList.contains('hidden'))window.optRenderHome();},900);}catch(e){}
 })();
+/* ===== OPTIMUM Performance module (rankings, achievers, bonus, protection, travel) ===== */
+(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
+  function num(n){n=Number(n);return isNaN(n)?0:n;}
+  function peso(n){return '₱'+num(n).toLocaleString('en-PH',{maximumFractionDigits:0});}
+  function toGo(t,a){return Math.max(num(t)-num(a),0);}
+  function pctOf(a,t){t=num(t);if(t<=0)return 0;return Math.min(num(a)/t*100,100);}
+  function bar(pct,cc){pct=Math.max(0,Math.min(100,num(pct)));return '<div class="perf-bar'+(cc?' cc':'')+'"><div class="perf-bar-fill" style="width:'+pct+'%"></div></div>';}
+  var ADMIN={agents:{},config:{}};
+
+  window.optRenderPerformance=function(){
+    var root=document.getElementById('perfRoot');if(!root)return;
+    root.innerHTML='<div class="perf-loading">Kinukuha ang performance…</div>';
+    window.optAuthFetch('/api/shared?type=perf').then(function(r){
+      if(!r||!r.ok){root.innerHTML='<div class="perf-loading">Error: '+esc((r&&r.j&&r.j.error)||'failed')+'</div>';return;}
+      var P=r.j.perf||{};
+      if(isAdmin()){ADMIN={agents:P.agents||{},config:P.config||{}};window.optAuthFetch('/api/agents').then(function(a){renderAdmin((a&&a.ok&&a.j.agents)||[],P.ranks||{},P.pop||0);}).catch(function(){renderAdmin([],P.ranks||{},P.pop||0);});}
+      else{renderAgent(P);}
+    }).catch(function(e){root.innerHTML='<div class="perf-loading">Error: '+esc(e.message)+'</div>';});
+  };
+
+  // ---------- AGENT READ-ONLY VIEW ----------
+  function rankCard(title,ape,cc,rank,pop){
+    return '<div class="perf-card"><div class="perf-card-h">'+esc(title)+'</div>'+
+      '<div class="perf-rank">'+(rank?('#'+rank):'—')+'<span>of '+pop+'</span></div>'+
+      '<div class="perf-kv"><span>APE</span><b>'+peso(ape)+'</b></div>'+
+      '<div class="perf-kv"><span>CC</span><b>'+num(cc)+'</b></div></div>';
+  }
+  function achieversCard(levels,actAPE){
+    levels=(levels||[]).slice().sort(function(a,b){return num(a.target)-num(b.target);});
+    var cur=null,next=null;
+    for(var i=0;i<levels.length;i++){if(num(levels[i].target)<=actAPE)cur=levels[i];else{next=levels[i];break;}}
+    var curName=cur?cur.level:'—';var nextName=next?next.level:'Max';
+    var tgt=next?num(next.target):(cur?num(cur.target):0);
+    var tg=next?toGo(tgt,actAPE):0;var prog=next?pctOf(actAPE,tgt):100;
+    return '<div class="perf-card"><div class="perf-card-h">🏆 Achievers</div>'+
+      '<div class="perf-kv"><span>Current Level</span><b>'+esc(curName)+'</b></div>'+
+      '<div class="perf-kv"><span>Next Level</span><b>'+esc(nextName)+'</b></div>'+
+      '<div class="perf-kv"><span>Target</span><b>'+peso(tgt)+' APE</b></div>'+
+      '<div class="perf-kv"><span>Actual</span><b>'+peso(actAPE)+' APE</b></div>'+
+      '<div class="perf-kv"><span>To Go</span><b>'+peso(tg)+' APE</b></div>'+
+      bar(prog)+'<div style="text-align:right;font-size:11px;font-weight:800;color:#64748b">'+Math.round(prog)+'%</div></div>';
+  }
+  function qpbCard(levels,qtdAPE,pr){
+    levels=(levels||[]).slice().sort(function(a,b){return num(a.target)-num(b.target);});
+    var cur=null,next=null;
+    for(var i=0;i<levels.length;i++){if(num(levels[i].target)<=qtdAPE)cur=levels[i];else{next=levels[i];break;}}
+    var tg=next?toGo(next.target,qtdAPE):0;
+    var status=next?(cur?'In Progress':'In Progress'):'Qualified';
+    var scls=next?(cur?'prog':'none'):'ok';
+    return '<div class="perf-card"><div class="perf-card-h">💰 Quarterly Performance Bonus</div>'+
+      '<div class="perf-kv"><span>Current QTD</span><b>'+peso(qtdAPE)+'</b></div>'+
+      '<div class="perf-kv"><span>Bonus Level</span><b>'+esc(cur?cur.level:'—')+'</b></div>'+
+      '<div class="perf-kv"><span>Bonus %</span><b>'+(cur?num(cur.pct):0)+'%</b></div>'+
+      '<div class="perf-kv"><span>Multiplier</span><b>'+(cur?num(cur.multiplier||cur.mult||0):0)+'x</b></div>'+
+      '<div class="perf-kv"><span>Next Level Target</span><b>'+(next?peso(next.target):'—')+'</b></div>'+
+      '<div class="perf-kv"><span>To Go</span><b>'+peso(tg)+'</b></div>'+
+      '<div class="perf-kv"><span>PR</span><b>'+num(pr)+'%</b></div>'+
+      '<div style="margin-top:8px"><span class="perf-pill '+scls+'">'+status+'</span></div></div>';
+  }
+  function protectionCard(cfg,aAPE,aCC){
+    cfg=cfg||{};var tAPE=num(cfg.targetAPE),tCC=num(cfg.targetCC);
+    var okAPE=aAPE>=tAPE&&tAPE>0,okCC=aCC>=tCC&&tCC>0;
+    var status=(okAPE&&okCC)?'Qualified':((aAPE>0||aCC>0)?'In Progress':'Not Started');
+    var scls=(okAPE&&okCC)?'ok':((aAPE>0||aCC>0)?'prog':'none');
+    return '<div class="perf-card"><div class="perf-card-h">🛡️ Protection Drive</div>'+
+      '<div class="perf-kv"><span>Period</span><b>'+esc(cfg.period||'—')+'</b></div>'+
+      '<div class="perf-kv"><span>APE</span><b>'+peso(aAPE)+' / '+peso(tAPE)+'</b></div>'+bar(pctOf(aAPE,tAPE))+
+      '<div class="perf-kv"><span>APE To Go</span><b>'+peso(toGo(tAPE,aAPE))+'</b></div>'+
+      '<div class="perf-kv"><span>CC</span><b>'+num(aCC)+' / '+num(tCC)+'</b></div>'+bar(pctOf(aCC,tCC),true)+
+      '<div class="perf-kv"><span>CC To Go</span><b>'+num(toGo(tCC,aCC))+'</b></div>'+
+      '<div style="margin-top:8px"><span class="perf-pill '+scls+'">'+status+'</span></div></div>';
+  }
+  function campaignSection(title,list,me){
+    list=list||[];if(!list.length)return '';
+    var aAPE=num(me.actAPE),aCC=num(me.actCC);
+    var cards=list.map(function(c){
+      var tAPE=num(c.targetAPE),tCC=num(c.targetCC);
+      var okAPE=aAPE>=tAPE&&tAPE>0,okCC=aCC>=tCC&&tCC>0;
+      var status=(okAPE&&okCC)?'Qualified':((aAPE>0||aCC>0)?'In Progress':'Not Started');
+      var scls=(okAPE&&okCC)?'ok':((aAPE>0||aCC>0)?'prog':'none');
+      return '<div class="perf-camp"><h4>'+esc(c.name||c.title||'Campaign')+'</h4><div class="sub">'+esc(c.title||'')+(c.period?(' · '+esc(c.period)):'')+'</div>'+
+        '<div class="perf-kv"><span>APE</span><b>'+peso(aAPE)+' / '+peso(tAPE)+'</b></div>'+bar(pctOf(aAPE,tAPE))+
+        '<div class="perf-kv"><span>APE To Go</span><b>'+peso(toGo(tAPE,aAPE))+'</b></div>'+
+        '<div class="perf-kv"><span>CC</span><b>'+num(aCC)+' / '+num(tCC)+'</b></div>'+bar(pctOf(aCC,tCC),true)+
+        '<div class="perf-kv"><span>CC To Go</span><b>'+num(toGo(tCC,aCC))+'</b></div>'+
+        '<div style="margin-top:8px"><span class="perf-pill '+scls+'">'+status+'</span></div></div>';
+    }).join('');
+    return '<div class="perf-section-label">'+esc(title)+'</div><div class="perf-cards">'+cards+'</div>';
+  }
+  function renderAgent(P){
+    var root=document.getElementById('perfRoot');if(!root)return;
+    var me=P.me||{},cfg=P.config||{},ranks=P.ranks||{},pop=P.pop||0;
+    var u=null;try{u=JSON.parse(sessionStorage.getItem('optUser')||'null');}catch(e){}
+    var nm=(u&&u.name)||'Agent';var code=(u&&u.code)||'';
+    var addLabel=cfg.addLabel||'Additional';
+    root.innerHTML=
+      '<div class="perf-hero"><div><h1>Hello, '+esc(nm.split(/\s+/)[0])+'!</h1><p>Your performance dashboard'+(code?(' · Agent Code <b>'+esc(code)+'</b>'):'')+'</p></div></div>'+
+      '<div class="perf-section-label">Performance Rankings</div><div class="perf-grid3">'+
+        rankCard('Month-to-Date',me.mtdAPE,me.mtdCC,ranks.mtd,pop)+
+        rankCard('Quarter-to-Date',me.qtdAPE,me.qtdCC,ranks.qtd,pop)+
+        rankCard(addLabel,me.addAPE,me.addCC,ranks.add,pop)+
+      '</div>'+
+      '<div class="perf-grid2">'+achieversCard(cfg.achievers,num(me.actAPE))+qpbCard(cfg.qpb,num(me.qtdAPE),me.pr)+'</div>'+
+      '<div class="perf-grid1">'+protectionCard(cfg.protection,num(me.pdAPE||me.actAPE),num(me.pdCC||me.actCC))+'</div>'+
+      campaignSection('✈️ Travel Incentives',cfg.travel,me)+
+      campaignSection('🎁 Bonus Targets',cfg.bonus,me);
+  }
+
+  // ---------- ADMIN MANAGEMENT VIEW ----------
+  var FIELDS=[['mtdAPE','MTD APE'],['mtdCC','MTD CC'],['qtdAPE','QTD APE'],['qtdCC','QTD CC'],['addAPE','Add APE'],['addCC','Add CC'],['actAPE','Act APE'],['actCC','Act CC'],['pdAPE','PD APE'],['pdCC','PD CC'],['pr','PR %']];
+  function renderAdmin(roster,ranks,pop){
+    var root=document.getElementById('perfRoot');if(!root)return;
+    var cfg=ADMIN.config||{};
+    var agentsOnly=roster.filter(function(a){return a&&a.id;});
+    // config editors
+    var html='<div class="perf-hero"><div><h1>Agent Performance Management</h1><p>I-input ang APE/CC bawat agent, i-configure ang mga campaign. Auto ang ranking at To-Go.</p></div></div>';
+    html+='<div class="perf-cfg"><h3>⚙️ Settings</h3>'+
+      '<div class="perf-cfg-row"><span class="lbl">Rank by</span><select id="pfRankBy"><option value="APE"'+(cfg.rankBy!=='CC'?' selected':'')+'>APE</option><option value="CC"'+(cfg.rankBy==='CC'?' selected':'')+'>CC</option></select>'+
+      '<span class="lbl">3rd period label</span><input id="pfAddLabel" value="'+esc(cfg.addLabel||'YTD')+'" placeholder="YTD"></div></div>';
+    html+=cfgListEditor('🏆 Achiever Levels','ach',cfg.achievers||[],[['level','Level','text'],['target','APE Target','num']]);
+    html+=cfgListEditor('💰 Quarterly Bonus Levels','qpb',cfg.qpb||[],[['level','Level','text'],['target','QTD Target','num'],['pct','Bonus %','num'],['multiplier','Multiplier','num']]);
+    html+='<div class="perf-cfg"><h3>🛡️ Protection Drive</h3><div class="perf-cfg-row"><span class="lbl">Period</span><input id="pfPdPeriod" value="'+esc((cfg.protection||{}).period||'')+'"><span class="lbl">Target APE</span><input id="pfPdAPE" type="number" value="'+num((cfg.protection||{}).targetAPE)+'"><span class="lbl">Target CC</span><input id="pfPdCC" type="number" value="'+num((cfg.protection||{}).targetCC)+'"></div></div>';
+    html+=cfgListEditor('✈️ Travel Incentives','travel',cfg.travel||[],[['name','Name','text'],['title','Destination/Title','text'],['period','Period','text'],['targetAPE','Target APE','num'],['targetCC','Target CC','num']]);
+    html+=cfgListEditor('🎁 Bonus Campaigns','bonus',cfg.bonus||[],[['name','Name','text'],['period','Period','text'],['targetAPE','Target APE','num'],['targetCC','Target CC','num']]);
+    // agents figures table
+    var addLabel=esc(cfg.addLabel||'Add');
+    var th='<th class="nm">Agent</th><th>Code</th>'+FIELDS.map(function(f){return '<th>'+esc(f[1].replace('Add',addLabel))+'</th>';}).join('')+'<th>MTD Rank</th>';
+    var rows=agentsOnly.map(function(a){
+      var rec=(ADMIN.agents&&ADMIN.agents[a.id])||{};
+      var tds=FIELDS.map(function(f){return '<td><input data-aid="'+a.id+'" data-f="'+f[0]+'" type="number" value="'+(rec[f[0]]!=null?num(rec[f[0]]):'')+'"></td>';}).join('');
+      return '<tr><td class="nm">'+esc(a.name)+'</td><td>'+esc(a.code||'—')+'</td>'+tds+'<td><b>'+((ranks.mtd&&ranks.mtd[a.id])?('#'+ranks.mtd[a.id]):'—')+'</b></td></tr>';
+    }).join('');
+    html+='<div class="perf-section-label">Agent Figures ('+agentsOnly.length+')</div>'+
+      (agentsOnly.length?('<div class="perf-wrap"><table class="perf-admin-table"><thead><tr>'+th+'</tr></thead><tbody>'+rows+'</tbody></table></div>'):'<div class="perf-loading">Wala pang agent. Magdagdag sa Agents tab.</div>')+
+      '<div style="margin-top:16px"><button class="perf-save" onclick="optSavePerformance()">💾 Save Performance</button></div>';
+    root.innerHTML=html;
+    window._perfRoster=agentsOnly;
+  }
+  function cfgListEditor(title,key,list,cols){
+    var rows=(list||[]).map(function(item,ix){
+      var inputs=cols.map(function(c){return '<input data-cfg="'+key+'" data-ix="'+ix+'" data-k="'+c[0]+'" '+(c[2]==='num'?'type="number"':'')+' placeholder="'+esc(c[1])+'" value="'+esc(item[c[0]]!=null?item[c[0]]:'')+'" style="width:'+(c[2]==='num'?'110px':'150px')+'">';}).join('');
+      return '<div class="perf-cfg-row" data-row="'+key+'-'+ix+'">'+inputs+'<button class="perf-mini del" onclick="optPerfDelRow(\''+key+'\','+ix+')">✕</button></div>';
+    }).join('');
+    return '<div class="perf-cfg" id="pfcfg-'+key+'"><h3>'+esc(title)+'</h3><div id="pfrows-'+key+'">'+rows+'</div><button class="perf-mini" onclick="optPerfAddRow(\''+key+'\')">+ Add</button></div>';
+  }
+  // collect config list from current inputs
+  function collectList(key){
+    var out=[];var rows={};
+    document.querySelectorAll('[data-cfg="'+key+'"]').forEach(function(inp){
+      var ix=inp.getAttribute('data-ix'),k=inp.getAttribute('data-k');rows[ix]=rows[ix]||{};rows[ix][k]=inp.type==='number'?num(inp.value):inp.value.trim();
+    });
+    Object.keys(rows).sort(function(a,b){return a-b;}).forEach(function(ix){var r=rows[ix];var hasVal=Object.keys(r).some(function(k){return r[k]!=='' &&r[k]!==0;});if(hasVal)out.push(r);});
+    return out;
+  }
+  function buildBlobFromInputs(){
+    var cfg={};
+    cfg.rankBy=(document.getElementById('pfRankBy')||{}).value||'APE';
+    cfg.addLabel=((document.getElementById('pfAddLabel')||{}).value||'YTD').trim();
+    cfg.achievers=collectList('ach');
+    cfg.qpb=collectList('qpb');
+    cfg.travel=collectList('travel').map(function(t,i){t.id=t.id||('t'+i);return t;});
+    cfg.bonus=collectList('bonus').map(function(t,i){t.id=t.id||('b'+i);return t;});
+    cfg.protection={period:((document.getElementById('pfPdPeriod')||{}).value||'').trim(),targetAPE:num((document.getElementById('pfPdAPE')||{}).value),targetCC:num((document.getElementById('pfPdCC')||{}).value)};
+    var agents={};
+    document.querySelectorAll('.perf-admin-table input[data-aid]').forEach(function(inp){
+      var aid=inp.getAttribute('data-aid'),f=inp.getAttribute('data-f');if(inp.value==='')return;agents[aid]=agents[aid]||{};agents[aid][f]=num(inp.value);
+    });
+    return {agents:agents,config:cfg};
+  }
+  window.optPerfAddRow=function(key){
+    // persist current edits, add empty row, re-render config block
+    var blob=buildBlobFromInputs();ADMIN=blob;
+    var map={ach:'achievers',qpb:'qpb',travel:'travel',bonus:'bonus'};var ck=map[key];
+    ADMIN.config[ck]=ADMIN.config[ck]||[];ADMIN.config[ck].push({});
+    optRenderPerformance(); // reloads from server would lose edits; instead re-render from ADMIN
+  };
+  window.optPerfDelRow=function(key,ix){
+    var blob=buildBlobFromInputs();ADMIN=blob;
+    var map={ach:'achievers',qpb:'qpb',travel:'travel',bonus:'bonus'};var ck=map[key];
+    if(ADMIN.config[ck])ADMIN.config[ck].splice(ix,1);
+    reRenderAdminFromState();
+  };
+  function reRenderAdminFromState(){
+    // re-render using ADMIN state + current roster (no server round-trip)
+    var roster=window._perfRoster||[];renderAdmin(roster,{},roster.length);
+  }
+  // override add-row to avoid server reload losing edits
+  window.optPerfAddRow=function(key){
+    var blob=buildBlobFromInputs();ADMIN=blob;
+    var map={ach:'achievers',qpb:'qpb',travel:'travel',bonus:'bonus'};var ck=map[key];
+    ADMIN.config[ck]=ADMIN.config[ck]||[];ADMIN.config[ck].push({});
+    reRenderAdminFromState();
+  };
+  window.optSavePerformance=function(){
+    if(!isAdmin())return;
+    var blob=buildBlobFromInputs();
+    window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify({type:'perf',agents:blob.agents,config:blob.config})}).then(function(r){
+      if(r&&r.ok){ADMIN=blob;alert('Na-save ang performance ✓');optRenderPerformance();}else alert('Save failed: '+((r&&r.j&&r.j.error)||'error'));
+    }).catch(function(e){alert('Save failed: '+e.message);});
+  };
+})();
 (function(){
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function isAdmin(){return !!(window.optIsAdmin&&window.optIsAdmin());}
@@ -11597,6 +11805,47 @@ function optImportRecProsWorkbook(input){
 })();
 </script>
 <style>
+/* ===== Performance module ===== */
+.perf-loading{padding:30px;text-align:center;color:#64748b;font-weight:700}
+.perf-hero{background:linear-gradient(120deg,#0B5ED7,#083B8A);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:6px}
+.perf-hero h1{margin:0 0 4px;font-size:22px;font-weight:900;color:#fff}
+.perf-hero p{margin:0;font-size:13px;opacity:.92}
+.perf-section-label{font-size:13px;font-weight:900;color:#0f172a;margin:20px 2px 10px}
+.perf-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.perf-grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.perf-grid1{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+.perf-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.perf-card{background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(15,23,42,.05)}
+.perf-card-h{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:#64748b;margin-bottom:8px}
+.perf-rank{font-size:30px;font-weight:900;color:#0B5ED7;line-height:1}
+.perf-rank span{font-size:12px;color:#94a3b8;font-weight:700;margin-left:6px}
+.perf-kv{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-top:1px solid #f1f5f9}
+.perf-kv span{color:#64748b;font-weight:700}
+.perf-kv b{color:#0f172a;font-weight:900}
+.perf-bar{height:9px;background:#eef2f7;border-radius:999px;overflow:hidden;margin:7px 0}
+.perf-bar-fill{height:100%;background:linear-gradient(90deg,#0B5ED7,#22d3ee);border-radius:999px}
+.perf-bar.cc .perf-bar-fill{background:linear-gradient(90deg,#B8325F,#f59e0b)}
+.perf-pill{display:inline-block;font-size:10px;font-weight:900;padding:2px 9px;border-radius:999px}
+.perf-pill.ok{background:#dcfce7;color:#166534}.perf-pill.prog{background:#fef3c7;color:#92400e}.perf-pill.none{background:#fee2e2;color:#b91c1c}
+.perf-camp{background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:16px;box-shadow:0 4px 14px rgba(15,23,42,.05)}
+.perf-camp h4{margin:0 0 2px;font-size:15px;color:#0f172a}
+.perf-camp .sub{font-size:12px;color:#64748b;margin-bottom:10px}
+.perf-admin-table{width:100%;border-collapse:collapse;font-size:12px}
+.perf-admin-table th,.perf-admin-table td{border:1px solid #e5e7eb;padding:5px 6px;text-align:center;white-space:nowrap}
+.perf-admin-table th{background:#f8fafc;font-weight:800;color:#475569;position:sticky;top:0}
+.perf-admin-table input{width:82px;border:1px solid #d8e3e7;border-radius:7px;padding:5px;font-size:12px;text-align:right}
+.perf-admin-table td.nm{text-align:left;font-weight:800;color:#0f172a;position:sticky;left:0;background:#fff}
+.perf-wrap{overflow:auto;max-height:60vh;border:1px solid #eef2f7;border-radius:12px}
+.perf-cfg{background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:16px;margin-bottom:14px}
+.perf-cfg h3{margin:0 0 10px;font-size:15px}
+.perf-cfg-row{display:flex;gap:8px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.perf-cfg-row input,.perf-cfg-row select{border:1px solid #d8e3e7;border-radius:8px;padding:7px 9px;font-size:13px}
+.perf-cfg-row .lbl{font-size:12px;font-weight:800;color:#475569;min-width:90px}
+.perf-mini{border:1px solid #cbd5e1;background:#fff;border-radius:7px;font-size:11px;font-weight:800;padding:4px 9px;cursor:pointer}
+.perf-mini.del{color:#dc2626;border-color:#fca5a5}
+.perf-save{border:0;background:#0B5ED7;color:#fff;border-radius:10px;padding:11px 20px;font-weight:900;cursor:pointer;font-size:14px}
+.perf-save:hover{background:#083B8A}
+@media(max-width:860px){.perf-grid3{grid-template-columns:1fr}.perf-grid2{grid-template-columns:1fr}.perf-cards{grid-template-columns:1fr}}
 /* ===== Dashboard homepage + grouped sidebar ===== */
 .side-group{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8;padding:12px 12px 4px;margin-top:4px}
 .dash-wrap{max-width:1200px;margin:0 auto}

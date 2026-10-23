@@ -10524,12 +10524,15 @@ body.opt-ov #appPage{display:none!important}
     window._optSwitching=true; // block any stale cross-account save while loading another account
     showOverlay('<div style="text-align:center;padding:30px 0"><h2>Loading account…</h2><p class="sub">Kinukuha ang data mula cloud.</p></div>');
     API.getData(aid).then(function(r){
+      // If the session was invalidated (401 → doLogout cleared the token), the login
+      // page is already showing — do NOT cover it with an error overlay.
+      if(!tok()){return;}
       if(!r.ok){showOverlay('<h2>Error</h2><p class="sub">'+(r.j.error||'Hindi makuha ang data')+'</p><button class="optbtn" onclick="location.reload()">Retry</button>');return;}
       restore((r.j.data&&r.j.data.keys)||{});
       try{ss.setItem('optLoadedCanon',optCanon(snapshot()));}catch(e){}
       ss.setItem('optHydratedFor',aid); ss.setItem('optAgentId',aid); ss.setItem('optimum_logged_in','1');
       location.reload();
-    }).catch(function(e){showOverlay('<h2>Error</h2><p class="sub">'+e.message+'</p><button class="optbtn" onclick="location.reload()">Retry</button>');});
+    }).catch(function(e){ if(!tok()){return;} showOverlay('<h2>Error</h2><p class="sub">'+e.message+'</p><button class="optbtn" onclick="location.reload()">Retry</button>'); });
   }
 
   // ---------- autosave ----------

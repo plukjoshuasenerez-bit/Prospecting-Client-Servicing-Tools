@@ -10580,7 +10580,12 @@ body.opt-ov #appPage{display:none!important}
   window.addEventListener('focus',pullIfRemoteNewer);
 
   // ---------- logout ----------
-  function doLogout(){pushNowSafe();['optToken','optUser','optAgentId','optHydratedFor','optimum_logged_in'].forEach(function(k){ss.removeItem(k);});location.reload();}
+  function doLogout(){pushNowSafe();['optToken','optUser','optAgentId','optHydratedFor','optimum_logged_in'].forEach(function(k){ss.removeItem(k);});window._optSwitching=false;dirty=false;
+    // Show the login page IN PLACE — never full-page reload. A reload here caused an
+    // infinite refresh loop (a 401 on load would reload, re-fire the request, 401 again…).
+    try{hideOverlay();}catch(e){}
+    try{var ap=document.getElementById('appPage');if(ap)ap.classList.add('hidden');}catch(e){}
+    try{if(typeof showLogin==='function'){showLogin();}else{var lp=document.getElementById('loginPage');if(lp)lp.classList.remove('hidden');}}catch(e){}}
   function pushNowSafe(){if(window._optSwitching||document.body.classList.contains('opt-ro'))return;try{var aid=currentAid();if(dirty&&aid&&tok()){fetch('/api/data',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify({agentId:aid,keys:snapshot()})});}}catch(e){}}
   window.logout=doLogout; window.optLogout=doLogout;
 
@@ -11548,8 +11553,9 @@ function optImportRecProsWorkbook(input){
     if(v===null)return;
     window.optAuthFetch('/api/shared',{method:'POST',body:JSON.stringify({type:'announce',text:v,active:!!v.trim()})}).then(function(r){if(r&&r.ok)optLoadAnnounce();else alert('Failed: '+((r&&r.j&&r.j.error)||'error'));}).catch(function(e){alert('Failed: '+e.message);});
   };
-  // initial paint if the home section is already visible after load
-  try{setTimeout(function(){var h=document.getElementById('home');if(h&&!h.classList.contains('hidden'))window.optRenderHome();},900);}catch(e){}
+  // initial paint — ONLY when actually logged in (app visible). Running this on the
+  // login page would fire an authenticated fetch with no token → 401 → reload loop.
+  try{setTimeout(function(){var h=document.getElementById('home');var ap=document.getElementById('appPage');if(h&&!h.classList.contains('hidden')&&ap&&!ap.classList.contains('hidden'))window.optRenderHome();},900);}catch(e){}
 })();
 /* ===== OPTIMUM Performance module (rankings, achievers, bonus, protection, travel) ===== */
 (function(){

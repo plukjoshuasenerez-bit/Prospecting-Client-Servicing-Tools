@@ -78,23 +78,24 @@ module.exports = async (req, res) => {
       }
       if (type === 'perf') {
         const raw = await kvGet(SHARED_PERF_KEY);
-        let blob = { agents: {}, config: {} };
+        let blob = { periods: {}, activePeriod: '', config: {} };
         if (raw) { try { blob = JSON.parse(raw) || blob; } catch (e) {} }
-        const agents = blob.agents || {};
-        const config = blob.config || {};
-        const rankBy = (config.rankBy === 'CC') ? 'CC' : 'APE';
-        // Compute ranks for each period using the configured metric.
-        const mtdR = perfRanks(agents, 'mtd' + rankBy);
-        const qtdR = perfRanks(agents, 'qtd' + rankBy);
-        const addR = perfRanks(agents, 'add' + rankBy);
-        const pop = Object.keys(agents).length;
-        if (me.role === 'admin') {
-          return send(res, 200, { perf: { agents: agents, config: config, ranks: { mtd: mtdR, qtd: qtdR, add: addR }, pop: pop } });
+        // Migrate the old flat {agents,config} shape into a single default period.
+        if (blob.agents && !blob.periods) {
+          blob = { periods: { 'default': { label: 'Current', start: '', end: '', agents: blob.agents } }, activePeriod: 'default', config: blob.config || {} };
         }
-        // Agent: only their own figures + shared config + their own ranks. Other
-        // agents' raw numbers are never sent.
-        const meRec = agents[me.uid] || {};
-        return send(res, 200, { perf: { me: meRec, config: config, ranks: { mtd: mtdR[me.uid] || null, qtd: qtdR[me.uid] || null, add: addR[me.uid] || null }, pop: pop } });
+        const periods = blob.periods || {};
+        const activeId = blob.activePeriod || Object.keys(periods)[0] || '';
+        const period = periods[activeId] || { label: '', start: '', end: '', agents: {} };
+        const agents = period.agents || {};
+        // Rank by Actual APE (highest first).
+        const vals = {};
+        Object.keys(agents).forEach(function (a) { vals[a] = Number(agents[a] && agents[a].actAPE) || 0; });
+        const ranks = rankMap(vals);
+        // The ranking leaderboard is visible to everyone (it is a leaderboard);
+        // only admins can POST/edit (enforced on POST). The full periods map is
+        // returned so an admin can switch periods and save without losing history.
+        return send(res, 200, { perf: { activePeriod: activeId, period: { label: period.label || '', start: period.start || '', end: period.end || '' }, agents: agents, ranks: ranks, periods: periods, config: blob.config || {}, canEdit: me.role === 'admin' } });
       }
       if (type === 'remarks') {
         const raw = await kvGet(SHARED_REMARKS_KEY);
@@ -166,10 +167,11 @@ module.exports = async (req, res) => {
         return send(res, 200, { ok: true, announce });
       }
       if ((b.type || type) === 'perf') {
-        // Admin-only (enforced above). Store the whole performance blob.
-        const agents = (b.agents && typeof b.agents === 'object') ? b.agents : {};
+        // Admin-only (enforced above). Store the whole period-based performance blob.
+        const periods = (b.periods && typeof b.periods === 'object') ? b.periods : {};
+        const activePeriod = String(b.activePeriod || '');
         const config = (b.config && typeof b.config === 'object') ? b.config : {};
-        const blob = { agents: agents, config: config, updatedAt: new Date().toISOString(), by: me.name || 'Admin' };
+        const blob = { periods: periods, activePeriod: activePeriod, config: config, updatedAt: new Date().toISOString(), by: me.name || 'Admin' };
         await kvSet(SHARED_PERF_KEY, JSON.stringify(blob));
         return send(res, 200, { ok: true });
       }

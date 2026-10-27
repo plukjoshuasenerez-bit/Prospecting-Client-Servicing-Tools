@@ -566,6 +566,14 @@ function showPage(id,btn){
   function saveOrder(){localStorage.setItem(KEY,JSON.stringify(buttons().map(b=>b.dataset.page)));}
   function loadOrder(){
     try{
+      // One-time reset: the sidebar was redesigned with a new canonical order
+      // (Dashboard, then Resources). Clear any stale saved drag-order once so the
+      // new default takes effect. Future manual re-drags still save and persist.
+      if(localStorage.getItem('optimum_navreset_v2')!=='1'){
+        try{localStorage.removeItem(KEY);localStorage.removeItem('optimumNavOrder');}catch(e){}
+        try{localStorage.setItem('optimum_navreset_v2','1');}catch(e){}
+        return;
+      }
       const order=JSON.parse(localStorage.getItem(KEY)||'[]');
       const side=document.querySelector('.sidebar');
       if(!side||!Array.isArray(order)||!order.length)return;

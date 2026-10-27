@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
       // Any authenticated user can read the roster for shared birthdays.
       // Admins get full details; agents get a limited view (name + birthday + status).
       if (me.role === 'admin') {
-        const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, code: u.code || '', createdAt: u.createdAt, status: u.status || '', dateCoded: u.dateCoded || '', birthday: u.birthday || '', licVariable: !!u.licVariable, licLife: !!u.licLife }));
+        const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, username: u.username, code: u.code || '', createdAt: u.createdAt, status: u.status || '', dateCoded: u.dateCoded || '', birthday: u.birthday || '', licVariable: !!u.licVariable, licLife: !!u.licLife, recruiter: u.recruiter || '', unitManager: u.unitManager || '', position: u.position || '', pr: (u.pr == null ? '' : u.pr), fbChat: u.fbChat || '' }));
         return send(res, 200, { agents: list });
       }
       const list = users.filter(u => u.role === 'agent').map(u => ({ id: u.id, name: u.name, code: u.code || '', status: u.status || '', birthday: u.birthday || '' }));
@@ -17,7 +17,7 @@ module.exports = async (req, res) => {
     if (me.role !== 'admin') return send(res, 403, { error: 'Admin only' });
     if (req.method === 'POST') {
       const b = await readBody(req);
-      const { name, username, password, status, dateCoded, birthday, licVariable, licLife, code } = b;
+      const { name, username, password, status, dateCoded, birthday, licVariable, licLife, code, recruiter, unitManager, position, pr, fbChat } = b;
       if (!name || !username || !password) return send(res, 400, { error: 'name, username, password kailangan' });
       if (users.some(u => String(u.username).toLowerCase() === String(username).toLowerCase()))
         return send(res, 409, { error: 'May ganitong username na' });
@@ -26,7 +26,8 @@ module.exports = async (req, res) => {
         return send(res, 409, { error: 'May ganitong Agent Code na' });
       const id = 'ag_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
       users.push({ id, name, username, role: 'agent', pass: hashPassword(password), createdAt: new Date().toISOString(),
-        status: status || '', dateCoded: dateCoded || '', birthday: birthday || '', licVariable: !!licVariable, licLife: !!licLife, code: codeV });
+        status: status || '', dateCoded: dateCoded || '', birthday: birthday || '', licVariable: !!licVariable, licLife: !!licLife, code: codeV,
+        recruiter: String(recruiter || '').trim(), unitManager: String(unitManager || '').trim(), position: String(position || '').trim(), pr: (pr === '' || pr == null ? '' : Number(pr)), fbChat: String(fbChat || '').trim() });
       await saveUsers(users);
       await kvSet(dataKey(id), JSON.stringify({ keys: {} }));
       return send(res, 200, { ok: true, agent: { id, name, username } });
@@ -57,6 +58,11 @@ module.exports = async (req, res) => {
       if (b.birthday !== undefined) u.birthday = b.birthday || '';
       if (b.licVariable !== undefined) u.licVariable = !!b.licVariable;
       if (b.licLife !== undefined) u.licLife = !!b.licLife;
+      if (b.recruiter !== undefined) u.recruiter = String(b.recruiter || '').trim();
+      if (b.unitManager !== undefined) u.unitManager = String(b.unitManager || '').trim();
+      if (b.position !== undefined) u.position = String(b.position || '').trim();
+      if (b.pr !== undefined) u.pr = (b.pr === '' || b.pr == null ? '' : Number(b.pr));
+      if (b.fbChat !== undefined) u.fbChat = String(b.fbChat || '').trim();
       await saveUsers(users);
       return send(res, 200, { ok: true });
     }

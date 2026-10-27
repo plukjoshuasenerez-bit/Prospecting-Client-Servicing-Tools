@@ -203,8 +203,9 @@ input[type="color"]{padding:4px}
   </div>
 </section>
 
-<section id="appPage" class="hidden">
+<section id="appPage" class="hidden sb-collapsed">
   <header class="topbar">
+    <button id="optSidebarToggle" class="opt-sb-toggle" onclick="optToggleSidebar()" aria-label="Show navigation menu" aria-expanded="false" title="Toggle navigation">☰</button>
     <button id="optMenuBtn" class="opt-menu-btn" onclick="optToggleDrawer()" aria-label="Menu" title="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
     <div class="top-brand">
       <div class="top-mark" id="topMark">O</div>
@@ -10265,6 +10266,13 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
 }
 /* ===== Mobile: ☰ action drawer (Save/Upload/Sync/Logout) + bottom tab bar ===== */
 .opt-menu-btn{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);background:#fff;border-radius:11px;cursor:pointer;color:#0f172a;flex:0 0 auto;margin-right:4px;padding:0}
+/* Collapsible navigation sidebar (desktop/tablet left-column layout) */
+.opt-sb-toggle{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--border);background:#fff;border-radius:11px;cursor:pointer;color:#0B5ED7;font-size:18px;font-weight:900;line-height:1;flex:0 0 auto;margin-right:8px;padding:0;transition:background .15s,color .15s}
+.opt-sb-toggle:hover{background:#0B5ED7;color:#fff}
+.opt-sb-toggle:focus-visible{outline:3px solid rgba(11,94,215,.45);outline-offset:2px}
+.sidebar{transition:width .26s ease,padding .26s ease,opacity .2s ease,transform .26s ease}
+#appPage.sb-collapsed .sidebar{width:0;min-width:0;padding-left:0;padding-right:0;opacity:0;transform:translateX(-10px);overflow:hidden;pointer-events:none;border-right:0}
+@media(max-width:760px){.opt-sb-toggle{display:none}}
 .opt-drawer-backdrop{display:none}
 .opt-adrawer{display:none}
 @media(max-width:760px){
@@ -11169,6 +11177,11 @@ body.opt-ov #appPage{display:none!important}
   };
   // ===== Mobile sidebar drawer =====
   window.optToggleDrawer=function(force){var b=document.body;var open=(force===undefined)?!b.classList.contains('opt-drawer-open'):!!force;if(open)b.classList.add('opt-drawer-open');else b.classList.remove('opt-drawer-open');};
+  // ===== Collapsible navigation sidebar =====
+  function optSyncSbBtn(){var ap=document.getElementById('appPage');var b=document.getElementById('optSidebarToggle');if(!ap||!b)return;var collapsed=ap.classList.contains('sb-collapsed');b.textContent=collapsed?'☰':'«';b.setAttribute('aria-expanded',collapsed?'false':'true');b.setAttribute('aria-label',collapsed?'Show navigation menu':'Hide navigation menu');}
+  window.optSetSidebar=function(show){var ap=document.getElementById('appPage');if(!ap)return;if(show)ap.classList.remove('sb-collapsed');else ap.classList.add('sb-collapsed');optSyncSbBtn();};
+  window.optToggleSidebar=function(){var ap=document.getElementById('appPage');if(!ap)return;window.optSetSidebar(ap.classList.contains('sb-collapsed'));};
+  try{optSyncSbBtn();document.addEventListener('DOMContentLoaded',optSyncSbBtn);}catch(e){}
   // Always start with the ☰ action drawer CLOSED on load / refresh / login.
   try{document.body.classList.remove('opt-drawer-open');}catch(e){}
   try{document.addEventListener('DOMContentLoaded',function(){document.body.classList.remove('opt-drawer-open');});}catch(e){}
@@ -11527,6 +11540,8 @@ function optImportRecProsWorkbook(input){
   }
   window.optRenderHome=function(){
     try{
+      // Dashboard opens with the sidebar hidden so content uses the full width.
+      try{window.optSetSidebar&&window.optSetSidebar(false);}catch(e){}
       var u=null;try{u=JSON.parse(sessionStorage.getItem('optUser')||'null');}catch(e){}
       var fullNm=(u&&u.name)?String(u.name).trim():'';
       var parts=fullNm.split(/\s+/).filter(Boolean);

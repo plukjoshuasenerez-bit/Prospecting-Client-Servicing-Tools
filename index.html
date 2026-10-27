@@ -470,16 +470,17 @@ input[type="color"]{padding:4px}
         <div id="saveStatus" class="status opt-admin-only"></div>
       </section>
       <section id="agents" class="app-section hidden">
-        <h1 class="page-title">Agents Management</h1>
-        <p class="page-sub">Mag-add ng agents at pamahalaan ang accounts nila. Admin lang ang may access dito.</p>
-        <div id="optAgentMgmt" style="border:1px solid #e5e7eb;border-radius:14px;padding:18px;margin:14px 0;background:#fff;box-shadow:0 4px 14px rgba(0,0,0,.05)">
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><button onclick="optAddAgent()" style="padding:10px 16px;border:0;border-radius:10px;background:#16a34a;color:#fff;font-weight:800;cursor:pointer">+ Add Agent</button><button onclick="optGoMyWorkspace()" style="padding:10px 16px;border:1px solid #e3e8ef;border-radius:10px;background:#fff;color:#475569;font-weight:700;cursor:pointer">My Workspace</button></div>
+        <div class="ag-head">
+          <div><h1 class="page-title" style="margin:0">Agents Management</h1><p class="page-sub" style="margin:4px 0 0">Manage agent accounts, access, and workspace settings.</p></div>
+          <div class="ag-head-actions"><button class="ag-btn-primary" onclick="optAddAgent()">+ Add Agent</button><button class="ag-btn-secondary" onclick="optGoMyWorkspace()">▦ My Workspace</button></div>
+        </div>
+        <div id="optAgentMgmt" class="ag-panel">
           <div id="optAgentMgmtList"></div>
         </div>
-        <div style="border:1px solid #fde68a;background:#fffbeb;border-radius:14px;padding:16px;margin:14px 0">
-          <div style="font-weight:800;color:#92400e;margin-bottom:4px">🧹 Fix leaked data (one-time cleanup)</div>
-          <p style="font-size:12px;color:#78350f;margin:0 0 10px">Tanggalin ang dating na-leak na admin na Prospect/Recruit data sa LAHAT ng agents. Magsisimula silang malinis sa prospect/recruit. HINDI maaapektuhan ang ibang data nila (clients, atbp.).</p>
-          <button onclick="optPurgeAgentsProsRec()" style="padding:10px 16px;border:0;border-radius:10px;background:#d97706;color:#fff;font-weight:800;cursor:pointer">🧹 Clear Prospect/Recruit of ALL agents</button>
+        <div class="ag-leak">
+          <div class="ag-leak-t">🧹 Fix leaked data (one-time cleanup)</div>
+          <p class="ag-leak-p">Tanggalin ang dating na-leak na admin na Prospect/Recruit data sa LAHAT ng agents. Magsisimula silang malinis sa prospect/recruit. HINDI maaapektuhan ang ibang data nila (clients, atbp.).</p>
+          <button class="ag-leak-btn" onclick="optPurgeAgentsProsRec()">🧹 Clear Prospect/Recruit of ALL agents</button>
         </div>
       </section>
       <section id="linkvault" class="app-section hidden">
@@ -10292,6 +10293,51 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
 .sidebar{transition:width .26s ease,padding .26s ease,opacity .2s ease,transform .26s ease}
 #appPage.sb-collapsed .sidebar{width:0;min-width:0;padding-left:0;padding-right:0;opacity:0;transform:translateX(-10px);overflow:hidden;pointer-events:none;border-right:0}
 @media(max-width:760px){.opt-sb-toggle{display:none}}
+/* ===== Agents Management — enterprise table ===== */
+.ag-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.ag-head-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ag-btn-primary{border:0;background:#1d4ed8;color:#fff;border-radius:9px;padding:10px 16px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 6px 14px -8px rgba(29,78,216,.6);transition:background .15s}
+.ag-btn-primary:hover{background:#1742b8}
+.ag-btn-secondary{border:1px solid #e3e8ef;background:#fff;color:#334155;border-radius:9px;padding:10px 16px;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s}
+.ag-btn-secondary:hover{background:#f6f8fc}
+.ag-panel{background:#fff;border:1px solid #e8ecf3;border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(16,24,40,.04);margin:0 0 16px}
+.ag-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.ag-search{flex:1;min-width:230px;padding:10px 14px;border:1px solid #e3e8ef;border-radius:9px;font-size:13px;font-family:inherit;background:#f8fafc;color:#334155}
+.ag-search:focus{outline:none;border-color:#1d4ed8;background:#fff;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.ag-filter{height:40px;border:1px solid #e3e8ef;border-radius:9px;padding:0 12px;background:#fff;color:#334155;font-size:13px;font-weight:600;cursor:pointer}
+.ag-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ag-table{width:100%;border-collapse:collapse;font-size:13px;min-width:1040px}
+.ag-table th{text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#8a95a6;padding:10px 12px;border-bottom:1px solid #eef1f6;white-space:nowrap}
+.ag-table td{padding:12px;border-bottom:1px solid #f2f4f8;vertical-align:middle;color:#334155;white-space:nowrap}
+.ag-table tbody tr:last-child td{border-bottom:0}
+.ag-table tbody tr:hover td{background:#f9fbff}
+.ag-code{font-weight:800;color:#1d4ed8}
+.ag-name{font-weight:800;color:#0f2744;cursor:pointer}
+.ag-name:hover{color:#1d4ed8;text-decoration:underline}
+.ag-view{display:inline-block;font-size:9.5px;font-weight:800;color:#15803d;background:#e7f8ee;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle}
+.ag-muted{color:#94a3b8}
+.ag-ellip{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+.ag-pr{width:62px;padding:6px 8px;border:1px solid #d8e0ec;border-radius:7px;text-align:center;font-weight:700;font-family:inherit;font-size:13px;color:#0f2744;background:#fff}
+.ag-pr:focus{outline:none;border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
+.ag-pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.ag-pill.ft{background:#e7f8ee;color:#15803d}
+.ag-pill.pt{background:#eaf1ff;color:#1d4ed8}
+.ag-pill.none{background:#f1f5f9;color:#94a3b8}
+.ag-chat{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#1d4ed8;background:#eef4ff;border:1px solid #dbe6ff;border-radius:8px;padding:4px 9px;text-decoration:none}
+.ag-chat:hover{background:#dbe6ff}
+.ag-act{display:flex;gap:6px;justify-content:flex-end}
+.ag-ic{width:30px;height:30px;border-radius:8px;border:1px solid #e3e8ef;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;font-size:13px;transition:background .15s}
+.ag-ic.edit{color:#ea8a0b;background:#fff7ec;border-color:#fde7c4}
+.ag-ic.edit:hover{background:#fdecd2}
+.ag-ic.del{color:#dc2626;background:#fef2f2;border-color:#fcd9d9}
+.ag-ic.del:hover{background:#fcdada}
+.ag-empty{color:#64748b;padding:22px 8px;text-align:center;font-weight:600}
+.ag-leak{border:1px solid #fde68a;background:#fffbeb;border-radius:14px;padding:16px;margin:0 0 16px}
+.ag-leak-t{font-weight:800;color:#92400e;margin-bottom:4px}
+.ag-leak-p{font-size:12px;color:#78350f;margin:0 0 10px}
+.ag-leak-btn{padding:10px 16px;border:0;border-radius:10px;background:#d97706;color:#fff;font-weight:800;cursor:pointer}
+.ag-leak-btn:hover{background:#b45309}
+@media(max-width:620px){.ag-head-actions{width:100%}.ag-btn-primary,.ag-btn-secondary{flex:1}}
 .opt-drawer-backdrop{display:none}
 .opt-adrawer{display:none}
 @media(max-width:760px){
@@ -10716,6 +10762,11 @@ body.opt-ov #appPage{display:none!important}
         '<div class="optaa-f"><label>Date Coded</label><input id="aaDate" type="date" value="'+(isEdit?ev(existing.dateCoded):'')+'"></div>'+
         '<div class="optaa-f"><label>🎂 Birthday</label><input id="aaBday" type="date" value="'+(isEdit?ev(existing.birthday):'')+'"></div>'+
         '<div class="optaa-f full"><label>License</label><div class="optaa-checks"><label class="optaa-chk"><input type="checkbox" id="aaLicVar"'+(isEdit&&existing.licVariable?' checked':'')+'> Variable</label><label class="optaa-chk"><input type="checkbox" id="aaLicLife"'+(isEdit&&existing.licLife?' checked':'')+'> Life</label><span class="optaa-hint">(Pag check pareho = Dual License)</span></div></div>'+
+        '<div class="optaa-f"><label>Recruiter</label><input id="aaRecruiter" placeholder="Pangalan ng recruiter" value="'+(isEdit?ev(existing.recruiter):'')+'"></div>'+
+        '<div class="optaa-f"><label>Unit Manager</label><input id="aaUM" placeholder="Pangalan ng unit manager" value="'+(isEdit?ev(existing.unitManager):'')+'"></div>'+
+        '<div class="optaa-f"><label>Position</label><input id="aaPosition" list="aaPosList" placeholder="Agent / Unit Manager" value="'+(isEdit?ev(existing.position):'')+'"><datalist id="aaPosList"><option value="Agent"><option value="Unit Manager"><option value="Branch Manager"><option value="Associate"></datalist></div>'+
+        '<div class="optaa-f"><label>PR%</label><input id="aaPR" type="number" min="0" max="100" placeholder="0-100" value="'+(isEdit&&existing.pr!==''&&existing.pr!=null?ev(existing.pr):'')+'"></div>'+
+        '<div class="optaa-f full"><label>FB Chat link</label><input id="aaFbChat" placeholder="m.me/... o Messenger profile link" value="'+(isEdit?ev(existing.fbChat):'')+'"></div>'+
       '</div>'+
       '<div class="optaa-actions"><button class="optaa-cancel" id="optaaCancel">Cancel</button><button class="optaa-save" id="optaaSave">'+(isEdit?'Save Changes':'+ Add Agent')+'</button></div>'+
     '</div>';
@@ -10732,7 +10783,8 @@ body.opt-ov #appPage{display:none!important}
       if(isEdit){
         if(!name||!username){alert('Name at Username kailangan.');return;}
         var pl={id:existing.id,name:name,username:username,code:g('aaCode'),status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
-          licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
+          licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked,
+          recruiter:g('aaRecruiter'),unitManager:g('aaUM'),position:g('aaPosition'),pr:g('aaPR'),fbChat:g('aaFbChat')};
         if(password)pl.password=password;
         btn.disabled=true;btn.textContent='Saving…';
         API.editAgent(pl).then(function(r){
@@ -10743,7 +10795,8 @@ body.opt-ov #appPage{display:none!important}
       }
       if(!name||!username||!password){alert('Name, Username, Password kailangan.');return;}
       var payload={name:name,username:username,password:password,code:g('aaCode'),status:g('aaStatus'),dateCoded:g('aaDate'),birthday:g('aaBday'),
-        licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked};
+        licVariable:document.getElementById('aaLicVar').checked,licLife:document.getElementById('aaLicLife').checked,
+        recruiter:g('aaRecruiter'),unitManager:g('aaUM'),position:g('aaPosition'),pr:g('aaPR'),fbChat:g('aaFbChat')};
       btn.disabled=true;btn.textContent='Adding…';
       API.addAgent(payload).then(function(r){
         if(!r.ok){alert(r.j.error||'Failed');btn.disabled=false;btn.textContent='+ Add Agent';return;}
@@ -10768,29 +10821,65 @@ body.opt-ov #appPage{display:none!important}
   window.optTenure=optTenure; window.optLicenseLabel=optLicenseLabel;
   function openAgent(aid){pushNow(function(){window._optSwitching=true;ss.setItem('optAgentId',aid);ss.removeItem('optHydratedFor');boot();});}
   function optRenderAgentsInSettings(){var box=document.getElementById('optAgentMgmtList');if(!box)return;API.agents().then(function(r){if(!r.ok){box.innerHTML='<p style="color:#dc2626">'+(r.j.error||'Error')+'</p>';return;}window._optAgentsCache=r.j.agents||[];optPaintAgents();});}
+  function optFmtAgDate(s){if(!s)return '';var m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return esc(String(s));var mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][(+m[2])-1]||'';return mo+' '+(+m[3])+', '+m[1];}
+  function optStatusPill(st){var s=String(st||'').toLowerCase();if(s.indexOf('full')>=0)return '<span class="ag-pill ft">Full-Time</span>';if(s.indexOf('part')>=0)return '<span class="ag-pill pt">Part-Time</span>';return '<span class="ag-pill none">—</span>';}
+  function optAgentYears(dc){if(!dc)return null;var d=new Date(dc+'T00:00:00');if(isNaN(d))return null;var now=new Date();var mo=(now.getFullYear()-d.getFullYear())*12+(now.getMonth()-d.getMonth());if(now.getDate()<d.getDate())mo--;return Math.max(0,Math.floor(mo/12));}
   function optPaintAgents(){
     var box=document.getElementById('optAgentMgmtList');if(!box)return;
     var list=window._optAgentsCache||[];var cur=ss.getItem('optAgentId')||'admin';
     var q=String(window._optAgentSearch||'').trim().toLowerCase();
-    var search='<input id="optAgentSearch" placeholder="🔎 Hanapin by name o Agent Code…" value="'+String(window._optAgentSearch||'').replace(/"/g,'&quot;')+'" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:9px;margin-bottom:10px;font-weight:700;font-family:inherit">';
-    var fl=list.filter(function(a){if(!q)return true;return (String(a.name||'').toLowerCase().indexOf(q)>=0)||(String(a.code||'').toLowerCase().indexOf(q)>=0)||(String(a.username||'').toLowerCase().indexOf(q)>=0);});
-    var cards;
-    if(!list.length){cards='<p style="color:#64748b;padding:8px">Wala pang agent. Pindutin ang + Add Agent.</p>';}
-    else if(!fl.length){cards='<p style="color:#64748b;padding:8px">Walang tugma sa paghahanap.</p>';}
-    else{cards=fl.map(function(a){
-      var ten=optTenure(a.dateCoded),lic=optLicenseLabel(a.licVariable,a.licLife),chips='';
-      if(a.code)chips+='<span class="optam-chip code" style="background:#eef4ff;color:#1d4ed8">🆔 '+esc(a.code)+'</span>';
-      if(a.status)chips+='<span class="optam-chip st-'+String(a.status).toLowerCase()+'">'+esc(a.status)+'</span>';
-      if(ten)chips+='<span class="optam-chip ten">'+esc(ten)+'</span>';
-      if(lic)chips+='<span class="optam-chip lic">'+esc(lic)+'</span>';
-      if(a.dateCoded)chips+='<span class="optam-chip date">Coded '+esc(a.dateCoded)+'</span>';
-      if(a.birthday)chips+='<span class="optam-chip bday">🎂 '+esc(a.birthday)+'</span>';
-      return '<div class="optam-card"><div class="optam-top"><div><div class="optam-nm">'+esc(a.name)+(a.code?' <span style="color:#1d4ed8;font-weight:800;font-size:12px">['+esc(a.code)+']</span>':'')+(a.id===cur?' <b style="color:#16a34a">(viewing)</b>':'')+'</div><div class="optam-u">@'+esc(a.username)+'</div></div><div class="optam-act"><button class="optam-open" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">Open</button><button class="optam-edit" onclick="optEditAgentById(&#39;'+a.id+'&#39;)">✎ Edit</button><button class="optam-del" onclick="optDelAgent(&#39;'+a.id+'&#39;)">Delete</button></div></div>'+(chips?'<div class="optam-chips">'+chips+'</div>':'')+'</div>';
-    }).join('');}
-    box.innerHTML=search+cards;
+    var sf=window._optAgentStatusF||'';var tf=window._optAgentTenureF||'';
+    var toolbar='<div class="ag-toolbar">'+
+      '<input id="optAgentSearch" class="ag-search" placeholder="Search code, name, recruiter, or unit manager…" value="'+String(window._optAgentSearch||'').replace(/"/g,'&quot;')+'">'+
+      '<select id="optAgentStatusF" class="ag-filter"><option value="">All Status</option><option value="full">Full-Time</option><option value="part">Part-Time</option></select>'+
+      '<select id="optAgentTenureF" class="ag-filter"><option value="">All Tenure</option><option value="0">&lt; 1 yr</option><option value="1">1–2 yrs</option><option value="3">3+ yrs</option></select>'+
+      '</div>';
+    var fl=list.filter(function(a){
+      if(q){var hay=[a.name,a.code,a.username,a.recruiter,a.unitManager].join(' ').toLowerCase();if(hay.indexOf(q)<0)return false;}
+      if(sf){var s=String(a.status||'').toLowerCase();if(sf==='full'&&s.indexOf('full')<0)return false;if(sf==='part'&&s.indexOf('part')<0)return false;}
+      if(tf){var y=optAgentYears(a.dateCoded);if(y==null)return false;if(tf==='0'&&y>=1)return false;if(tf==='1'&&(y<1||y>2))return false;if(tf==='3'&&y<3)return false;}
+      return true;
+    });
+    var bodyHtml;
+    if(!list.length){bodyHtml='<div class="ag-empty">Wala pang agent. Pindutin ang + Add Agent.</div>';}
+    else if(!fl.length){bodyHtml='<div class="ag-empty">Walang tugma sa paghahanap / filter.</div>';}
+    else{
+      var rows=fl.map(function(a){
+        var ten=optTenure(a.dateCoded)||'—';
+        var rec=a.recruiter?('<span class="ag-ellip" title="'+esc(a.recruiter)+'">'+esc(a.recruiter)+'</span>'):'<span class="ag-muted">—</span>';
+        var um=a.unitManager?('<span class="ag-ellip" title="'+esc(a.unitManager)+'">'+esc(a.unitManager)+'</span>'):'<span class="ag-muted">—</span>';
+        var pos=a.position?esc(a.position):'<span class="ag-muted">—</span>';
+        var prVal=(a.pr===''||a.pr==null)?'':a.pr;
+        var pr='<input class="ag-pr" type="number" min="0" max="100" value="'+esc(String(prVal))+'" data-id="'+a.id+'" onchange="optSaveAgentPR(this)" onclick="event.stopPropagation()">';
+        var chat=a.fbChat?('<a class="ag-chat" href="#" onclick="optOpenFbChat(event,&#39;'+a.id+'&#39;)">💬 Chat</a>'):'<span class="ag-muted">—</span>';
+        var viewing=a.id===cur?' <span class="ag-view">viewing</span>':'';
+        return '<tr>'+
+          '<td class="ag-code">'+(a.code?esc(a.code):'—')+'</td>'+
+          '<td><span class="ag-name" title="Open workspace" onclick="optOpenAgent(&#39;'+a.id+'&#39;)">'+esc(a.name)+'</span>'+viewing+'</td>'+
+          '<td>'+rec+'</td>'+
+          '<td>'+um+'</td>'+
+          '<td>'+pos+'</td>'+
+          '<td>'+pr+'</td>'+
+          '<td>'+optStatusPill(a.status)+'</td>'+
+          '<td class="ag-muted">'+(a.birthday?esc(optFmtAgDate(a.birthday)):'—')+'</td>'+
+          '<td class="ag-muted">'+(a.dateCoded?esc(optFmtAgDate(a.dateCoded)):'—')+'</td>'+
+          '<td>'+esc(ten)+'</td>'+
+          '<td>'+chat+'</td>'+
+          '<td><div class="ag-act"><button class="ag-ic edit" title="Edit" onclick="optEditAgentById(&#39;'+a.id+'&#39;)">✎</button><button class="ag-ic del" title="Delete" onclick="optDelAgent(&#39;'+a.id+'&#39;)">🗑</button></div></td>'+
+          '</tr>';
+      }).join('');
+      bodyHtml='<div class="ag-table-wrap"><table class="ag-table"><thead><tr>'+
+        '<th>Agent Code</th><th>Name</th><th>Recruiter</th><th>Unit Manager</th><th>Position</th><th>PR%</th><th>Status</th><th>Birthday</th><th>Date Coded</th><th>Tenure</th><th>FB Chat</th><th style="text-align:right">Actions</th>'+
+        '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+    }
+    box.innerHTML=toolbar+bodyHtml;
     var si=document.getElementById('optAgentSearch');if(si){si.oninput=function(){window._optAgentSearch=si.value;var p=si.selectionStart;optPaintAgents();var s2=document.getElementById('optAgentSearch');if(s2){s2.focus();try{s2.setSelectionRange(p,p);}catch(e){}}};}
+    var stf=document.getElementById('optAgentStatusF');if(stf){stf.value=sf;stf.onchange=function(){window._optAgentStatusF=stf.value;optPaintAgents();};}
+    var tnf=document.getElementById('optAgentTenureF');if(tnf){tnf.value=tf;tnf.onchange=function(){window._optAgentTenureF=tnf.value;optPaintAgents();};}
   }
   window.optPaintAgents=optPaintAgents;
+  window.optSaveAgentPR=function(inp){var id=inp.getAttribute('data-id');var v=String(inp.value).trim();var n=v===''?'':Number(v);if(v!==''&&(isNaN(n)||n<0||n>100)){alert('PR% dapat 0–100.');var a0=(window._optAgentsCache||[]).filter(function(x){return x.id===id;})[0];inp.value=(a0&&a0.pr!=null&&a0.pr!=='')?a0.pr:'';return;}inp.disabled=true;API.editAgent({id:id,pr:v}).then(function(r){inp.disabled=false;if(!r.ok){alert((r.j&&r.j.error)||'Failed to save PR%');return;}var a=(window._optAgentsCache||[]).filter(function(x){return x.id===id;})[0];if(a)a.pr=(v===''?'':n);}).catch(function(e){inp.disabled=false;alert('Error: '+e.message);});};
+  window.optOpenFbChat=function(ev,id){if(ev){ev.preventDefault();ev.stopPropagation();}var a=(window._optAgentsCache||[]).filter(function(x){return x.id===id;})[0];if(!a||!a.fbChat)return;var url=String(a.fbChat).trim();if(!/^https?:\/\//i.test(url))url='https://'+url;window.open(url,'_blank','noopener');};
   window.optEditAgentById=function(id){var list=window._optAgentsCache||[];var a=list.filter(function(x){return x.id===id;})[0];if(a){addAgentFlow(a);}else{API.agents().then(function(r){if(r.ok){var a2=(r.j.agents||[]).filter(function(x){return x.id===id;})[0];if(a2)addAgentFlow(a2);}});}};
   window.optAddAgent=addAgentFlow;
   window.optOpenAgent=openAgent;

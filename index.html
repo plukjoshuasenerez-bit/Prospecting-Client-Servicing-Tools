@@ -785,18 +785,17 @@ function optParseCalendarGrid(rows){
   var events=[];
   for(var bi=0;bi<dayrows.length;bi++){
     var ri2=dayrows[bi].ri,dc=dayrows[bi].dc;
-    var endrow=(bi+1<dayrows.length)?dayrows[bi+1].ri:Math.min(ri2+16,rows.length);
+    var endrow=(bi+1<dayrows.length)?dayrows[bi+1].ri:Math.min(ri2+18,rows.length);
     var dcs=[];for(var dk in dc)dcs.push(parseInt(dk,10));dcs.sort(function(a,b){return a-b;});
     var percol={};
-    for(var rr=ri2+1;rr<endrow;rr++){var row=rows[rr]||[];for(var c=0;c<row.length;c++){var v=((row[c]||'')+'').trim();if(!v)continue;var prev=-1;for(var p=0;p<dcs.length;p++){if(dcs[p]<=c)prev=dcs[p];}if(prev<0)continue;if(!percol[c])percol[c]=[];percol[c].push([prev,v]);}}
+    for(var rr=ri2+1;rr<endrow;rr++){var row=rows[rr]||[];for(var c=0;c<row.length&&c<=13;c++){var v=((row[c]||'')+'').trim();if(!v)continue;var prev=-1;for(var p=0;p<dcs.length;p++){if(dcs[p]<=c)prev=dcs[p];}if(prev<0)continue;if(!percol[c])percol[c]=[];percol[c].push([prev,v]);}}
     var cols=[];for(var cc in percol)cols.push(parseInt(cc,10));cols.sort(function(a,b){return a-b;});
     for(var ci2=0;ci2<cols.length;ci2++){var arr=percol[cols[ci2]];var cur=null;
       for(var ii=0;ii<arr.length;ii++){var dcol=arr[ii][0],v2=arr[ii][1];var day=dc[dcol];var date=year+'-'+(month<10?'0':'')+month+'-'+(day<10?'0':'')+day;
+        var nextV=(ii+1<arr.length)?arr[ii+1][1]:'';
         if(isTime(v2)){if(cur){var tt=parseTimeStr(v2);if(!cur.start)cur.start=tt[0];if(!cur.end)cur.end=tt[1];}}
-        else if(isMeta(v2)){if(cur)cur.notes=(cur.notes?cur.notes+' | ':'')+v2;}
-        else if(isName(v2)){continue;}
-        else if(isTitle(v2)){if(cur)events.push(cur);cur={title:v2,date:date,start:'',end:'',notes:''};}
-        else {if(cur)cur.notes=(cur.notes?cur.notes+' | ':'')+v2;}
+        else if(isTime(nextV)){if(cur)events.push(cur);cur={title:v2,date:date,start:'',end:'',notes:''};}
+        else {if(cur&&!isName(v2))cur.notes=(cur.notes?cur.notes+' | ':'')+v2;}
       }
       if(cur)events.push(cur);
     }

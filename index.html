@@ -233,6 +233,15 @@ input[type="color"]{padding:4px}
     <div id="optDrawerBackdrop" class="opt-drawer-backdrop" onclick="optToggleDrawer(false)"></div>
     <div id="optActionDrawer" class="opt-adrawer" aria-hidden="true">
       <div class="opt-adrawer-head"><span>⚡ Menu</span><button class="opt-adrawer-x" onclick="optToggleDrawer(false)" aria-label="Close">×</button></div>
+      <div class="opt-adrawer-sec">Navigation</div>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('home')"><span class="ai">🧭</span><span>Dashboard</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('calendar')"><span class="ai">📅</span><span>Calendar</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('activitylog')"><span class="ai">🏅</span><span>Activity Log</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('prospect')"><span class="ai">🎯</span><span>Prospect Tracker</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('recruit')"><span class="ai">🧲</span><span>Recruitment Tracker</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('clientref')"><span class="ai">📋</span><span>Client &amp; Refresher</span></button>
+      <button class="opt-adrawer-item" onclick="optDrawerGo('linkvault')"><span class="ai">🔗</span><span>Link Vault</span></button>
+      <div class="opt-adrawer-sec">Tools</div>
       <button class="opt-adrawer-item" onclick="optToggleDrawer(false);optimumSaveBackup()"><span class="ai">⬇️</span><span>Save / Download Backup</span></button>
       <button class="opt-adrawer-item" onclick="optToggleDrawer(false);document.getElementById('optRestoreHdr').click()"><span class="ai">⬆️</span><span>Upload / Restore Backup</span></button>
       <button class="opt-adrawer-item" onclick="optToggleDrawer(false);window.optSyncNow&&optSyncNow()"><span class="ai">🔄</span><span>Sync Now</span></button>
@@ -10297,7 +10306,7 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
 .opt-sb-toggle:hover{background:#0B5ED7;color:#fff}
 .opt-sb-toggle:focus-visible{outline:3px solid rgba(11,94,215,.45);outline-offset:2px}
 .sidebar{transition:width .26s ease,padding .26s ease,opacity .2s ease,transform .26s ease}
-#appPage.sb-collapsed .sidebar{width:0;min-width:0;padding-left:0;padding-right:0;opacity:0;transform:translateX(-10px);overflow:hidden;pointer-events:none;border-right:0}
+@media(min-width:761px){#appPage.sb-collapsed .sidebar{width:0;min-width:0;padding-left:0;padding-right:0;opacity:0;transform:translateX(-10px);overflow:hidden;pointer-events:none;border-right:0}}
 @media(max-width:760px){.opt-sb-toggle{display:none}}
 /* ===== Agents Management — enterprise table ===== */
 .ag-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
@@ -10372,6 +10381,7 @@ input,select,textarea{transition:border-color .15s ease,box-shadow .15s ease}
   body.opt-drawer-open .opt-drawer-backdrop{display:block;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:10055}
   .opt-adrawer-head{display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:800;color:#fff;padding:2px 2px 10px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:4px}
   .opt-adrawer-x{background:transparent;border:0;color:#cbd5e1;font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+  .opt-adrawer-sec{font-size:10.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:rgba(238,242,247,.5);padding:10px 6px 4px}
   .opt-adrawer-item{display:flex;align-items:center;gap:11px;width:100%;border:0;background:rgba(255,255,255,.06);color:#eef2f7;text-align:left;padding:13px 14px;border-radius:11px;cursor:pointer;font-size:14.5px;font-weight:600}
   .opt-adrawer-item:active,.opt-adrawer-item:hover{background:rgba(255,255,255,.12)}
   .opt-adrawer-item.danger{background:rgba(227,38,46,.14);color:#ffb4b4}
@@ -11291,6 +11301,8 @@ body.opt-ov #appPage{display:none!important}
   };
   // ===== Mobile sidebar drawer =====
   window.optToggleDrawer=function(force){var b=document.body;var open=(force===undefined)?!b.classList.contains('opt-drawer-open'):!!force;if(open)b.classList.add('opt-drawer-open');else b.classList.remove('opt-drawer-open');};
+  // Navigate from the ☰ drawer by triggering the real sidebar nav button (reuses its full handler + active state).
+  window.optDrawerGo=function(page){try{optToggleDrawer(false);}catch(e){}var b=document.querySelector('.sidebar .nav-btn[data-page="'+page+'"]');if(b){b.click();}else{try{showPage(page);}catch(e){}}};
   // ===== Collapsible navigation sidebar =====
   function optSyncSbBtn(){var ap=document.getElementById('appPage');var b=document.getElementById('optSidebarToggle');if(!ap||!b)return;var collapsed=ap.classList.contains('sb-collapsed');b.textContent=collapsed?'☰':'«';b.setAttribute('aria-expanded',collapsed?'false':'true');b.setAttribute('aria-label',collapsed?'Show navigation menu':'Hide navigation menu');}
   window.optSetSidebar=function(show){var ap=document.getElementById('appPage');if(!ap)return;if(show)ap.classList.remove('sb-collapsed');else ap.classList.add('sb-collapsed');optSyncSbBtn();};

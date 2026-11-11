@@ -203,7 +203,7 @@ input[type="color"]{padding:4px}
   </div>
 </section>
 
-<section id="appPage" class="hidden sb-collapsed">
+<section id="appPage" class="hidden">
   <header class="topbar">
     <button id="optSidebarToggle" class="opt-sb-toggle" onclick="optToggleSidebar()" aria-label="Show navigation menu" aria-expanded="false" title="Toggle navigation">☰</button>
     <button id="optMenuBtn" class="opt-menu-btn" onclick="optToggleDrawer()" aria-label="Menu" title="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
@@ -11666,8 +11666,6 @@ function optImportRecProsWorkbook(input){
   }
   window.optRenderHome=function(){
     try{
-      // Dashboard opens with the sidebar hidden so content uses the full width.
-      try{window.optSetSidebar&&window.optSetSidebar(false);}catch(e){}
       var u=null;try{u=JSON.parse(sessionStorage.getItem('optUser')||'null');}catch(e){}
       var fullNm=(u&&u.name)?String(u.name).trim():'';
       var parts=fullNm.split(/\s+/).filter(Boolean);

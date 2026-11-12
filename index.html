@@ -222,7 +222,7 @@ input[type="color"]{padding:4px}
       <button class="nav-btn" data-page="activitylog" onclick="showPage('activitylog',this);alogInit();"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="14.5" r="5.3"/><path d="M8.6 9.6 6 3h12l-2.6 6.6"/><path d="M12 12.6l.8 1.6 1.8.2-1.4 1.2.4 1.8-1.6-.9-1.6.9.4-1.8-1.4-1.2 1.8-.2z"/></svg> <span class="nav-label">Activity Log</span></button>
       <button class="nav-btn" data-page="prospect" onclick="showPage('prospect',this)"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="13" r="8"/><circle cx="11" cy="13" r="3.4"/><path d="M11 13l8-8"/><path d="M15 5h4v4"/></svg> <span class="nav-label">Prospect Tracker</span></button>
       <button class="nav-btn" data-page="recruit" onclick="showPage('recruit',this);recInit();"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V10a6 6 0 0 1 12 0v10"/><line x1="6" y1="16.5" x2="10" y2="16.5"/><line x1="14" y1="16.5" x2="18" y2="16.5"/></svg> <span class="nav-label">Recruitment Tracker</span></button>
-      <button class="nav-btn" data-page="clientref" onclick="showClientRef('clients',this)"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9.2" y1="12.5" x2="14.8" y2="12.5"/><line x1="9.2" y1="16" x2="14.8" y2="16"/></svg> <span class="nav-label">Client &amp; Refresher</span></button>
+      <button class="nav-btn" data-page="clientref" onclick="optOpenCRM()"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><line x1="9.2" y1="12.5" x2="14.8" y2="12.5"/><line x1="9.2" y1="16" x2="14.8" y2="16"/></svg> <span class="nav-label">Client Refresher</span></button>
       <button class="nav-btn" data-page="linkvault" onclick="showPage('linkvault',this);try{optLVRender&&optLVRender();}catch(e){}"><svg class="nav-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.6 13.4a3.8 3.8 0 0 1 0-5.4l2.2-2.2a3.8 3.8 0 0 1 5.4 5.4l-1.3 1.3"/><path d="M14.4 10.6a3.8 3.8 0 0 1 0 5.4l-2.2 2.2a3.8 3.8 0 0 1-5.4-5.4l1.3-1.3"/></svg> <span class="nav-label">Link Vault</span></button>
     <div class="user-area">
       <span id="loggedUser">70117295</span>
@@ -239,7 +239,7 @@ input[type="color"]{padding:4px}
       <button class="opt-adrawer-item" onclick="optDrawerGo('activitylog')"><span class="ai">🏅</span><span>Activity Log</span></button>
       <button class="opt-adrawer-item" onclick="optDrawerGo('prospect')"><span class="ai">🎯</span><span>Prospect Tracker</span></button>
       <button class="opt-adrawer-item" onclick="optDrawerGo('recruit')"><span class="ai">🧲</span><span>Recruitment Tracker</span></button>
-      <button class="opt-adrawer-item" onclick="optDrawerGo('clientref')"><span class="ai">📋</span><span>Client &amp; Refresher</span></button>
+      <button class="opt-adrawer-item" onclick="optToggleDrawer(false);optOpenCRM()"><span class="ai">📋</span><span>Client Refresher</span></button>
       <button class="opt-adrawer-item" onclick="optDrawerGo('linkvault')"><span class="ai">🔗</span><span>Link Vault</span></button>
       <div class="opt-adrawer-sec">Tools</div>
       <button class="opt-adrawer-item" onclick="optToggleDrawer(false);optimumSaveBackup()"><span class="ai">⬇️</span><span>Save / Download Backup</span></button>
@@ -329,7 +329,7 @@ input[type="color"]{padding:4px}
   <div id="perfRoot"><div class="perf-loading">Kinukuha ang performance…</div></div>
 </section>
 <section id="clientref" class="app-section hidden" style="padding:0;margin:0">
-  <iframe id="prismFrame" title="Client & Refresher" style="width:100%;height:88vh;min-height:600px;border:0;display:block;background:#fff"></iframe>
+  <div style="max-width:560px;margin:60px auto;text-align:center;padding:32px 24px"><div style="font-size:40px;margin-bottom:10px">📋</div><h2 style="margin:0 0 8px;color:#0f2744">Client Refresher</h2><p style="color:#64748b;margin:0 0 20px">Bubukas ang TEAM JOSH CRM sa bagong tab.</p><button onclick="optOpenCRM()" style="border:0;background:#1d4ed8;color:#fff;border-radius:10px;padding:12px 22px;font-weight:800;font-size:14px;cursor:pointer">Buksan ang Client Refresher ↗</button></div>
 </section>
 <section id="proposal" class="app-section hidden"><div id="proposalModule"><section id="encode" class="panel active">
 <div class="card">
@@ -540,7 +540,7 @@ function login(){
     document.getElementById('appPage').classList.remove('hidden');
     document.getElementById('loggedUser').textContent=u;
     document.getElementById('loginError').textContent='';
-    var defBtn=document.querySelector('.nav-btn[data-page="clientref"]'); if(defBtn && typeof showClientRef==='function'){ showClientRef('clients',defBtn); } else { var pb=document.querySelector('.nav-btn[data-page="proposal"]'); if(pb) showPage('proposal',pb); }
+    var defBtn=document.querySelector('.nav-btn[data-page="home"]'); if(defBtn){ try{ showPage('home',defBtn); }catch(e){} }
   } else document.getElementById('loginError').textContent='Invalid username or password.';
 }
 function logout(){
@@ -9924,6 +9924,7 @@ input[type="date"], input[type="search"], input:not([type]), select{
 </body>
 </html></script>
 <script>
+function optOpenCRM(){ try{ window.open('https://claude.ai/artifact/MbybPpnCgi1QiCQMGDMHWS','_blank','noopener'); }catch(e){ location.href='https://claude.ai/artifact/MbybPpnCgi1QiCQMGDMHWS'; } }
 function showClientRef(which,btn){ try{ showPage('clientref',btn); }catch(e){}
   var f=document.getElementById('prismFrame'); if(!f) return;
   var doOpen=function(){ try{ if(f.contentWindow&&f.contentWindow.openTab) f.contentWindow.openTab(which==='refresher'?'card':'summary'); }catch(e){} };
